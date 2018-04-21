@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="config_toolbar_height">56dp</dimen>
+    <dimen name="cardCornerRadius">2dp</dimen>
+    <dimen name="config_button_height">40dp</dimen>
+    <dimen name="height_editText">48dp</dimen>
+    <dimen name="height_listItemSingle">48dp</dimen>
+    <dimen name="text_size_small">14sp</dimen>
+</resources>
