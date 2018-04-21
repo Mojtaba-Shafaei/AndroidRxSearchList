@@ -165,8 +165,8 @@ public class LovSimple extends AppCompatActivity {
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
+    public void onAttachedToWindow() {
+        super.onAttachedToWindow();
         tvMessage.setVisibility(View.GONE);
 
         try {
@@ -338,9 +338,8 @@ public class LovSimple extends AppCompatActivity {
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        recyclerView.removeObservers();
+    public void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
         sLoader = null;
     }
 

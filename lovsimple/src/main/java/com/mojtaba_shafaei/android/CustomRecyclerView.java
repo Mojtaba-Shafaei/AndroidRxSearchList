@@ -83,4 +83,10 @@ class CustomRecyclerView extends RecyclerView {
             emptyObserver = null;
         }
     }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        removeObservers();
+    }
 }
