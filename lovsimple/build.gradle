@@ -5,7 +5,8 @@ group='com.github.Mojtaba-Shafaei'
 android {
     compileSdkVersion 27
 
-
+    resourcePrefix 'lov_simple_'
+    publishNonDefault true
 
     defaultConfig {
         minSdkVersion rootProject.ext.minSdkVersion

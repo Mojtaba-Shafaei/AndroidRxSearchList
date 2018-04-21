@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="config_toolbar_height">64dp</dimen>
-    <dimen name="config_button_height">56dp</dimen>
-    <dimen name="height_editText">56dp</dimen>
-    <dimen name="height_listItemSingle">56dp</dimen>
+    <dimen name="lov_simple_config_toolbar_height">64dp</dimen>
+    <dimen name="lov_simple_config_button_height">56dp</dimen>
+    <dimen name="lov_simple_height_editText">56dp</dimen>
+    <dimen name="lov_simple_height_listItemSingle">56dp</dimen>
 </resources>

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+    <style name="lov_simple_AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="android:windowContentTransitions">true</item>
-        <item name="textColorError">@color/textInput_error_color_light</item>
+        <item name="textColorError">@color/lov_simple_textInput_error_color_light</item>
     </style>
 </resources>

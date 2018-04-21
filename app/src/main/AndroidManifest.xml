@@ -5,10 +5,10 @@
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name"
+        android:label="@string/lov_simple_app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
+        android:theme="@style/lov_simple_AppTheme">
         <activity android:name="com.mojtaba_shafaei.android.lovSimpleSample.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

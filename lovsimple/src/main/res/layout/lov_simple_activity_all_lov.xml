@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/root"
+    android:id="@+id/lov_simple_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/blue_grey50">
+    android:background="@color/lov_simple_blue_grey50">
 
     <android.support.v7.widget.CardView
-        android:id="@+id/card_appBar"
+        android:id="@+id/lov_simple_card_appBar"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/config_toolbar_height"
+        android:layout_height="@dimen/lov_simple_config_toolbar_height"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
         android:layout_marginTop="4dp"
-        app:cardBackgroundColor="@color/Color_White"
-        app:cardCornerRadius="@dimen/cardCornerRadius"
+        app:cardBackgroundColor="@color/lov_simple_Color_White"
+        app:cardCornerRadius="@dimen/lov_simple_cardCornerRadius"
         app:cardElevation="4dp"
         app:cardPreventCornerOverlap="true"
         app:cardUseCompatPadding="true"
@@ -30,45 +30,45 @@
                 android:layout_height="match_parent">
 
                 <android.support.v7.widget.AppCompatImageButton
-                    android:id="@+id/btn_back"
-                    android:layout_width="@dimen/config_button_height"
-                    android:layout_height="@dimen/config_button_height"
+                    android:id="@+id/lov_simple_btn_back"
+                    android:layout_width="@dimen/lov_simple_config_button_height"
+                    android:layout_height="@dimen/lov_simple_config_button_height"
                     android:layout_marginRight="8dp"
-                    android:background="@drawable/bgs_flat_button_transparent_oval"
+                    android:background="@drawable/lov_simple_bgs_flat_button_transparent_oval"
                     android:scaleType="centerInside"
-                    android:src="@drawable/ic_arrow_back_grey_600_24dp"
+                    android:src="@drawable/lov_simple_ic_arrow_back_grey_600_24dp"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintRight_toRightOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
                 <android.support.v7.widget.AppCompatEditText
-                    android:id="@+id/search_view"
+                    android:id="@+id/lov_simple_search_view"
                     android:layout_width="0dp"
-                    android:layout_height="@dimen/height_editText"
+                    android:layout_height="@dimen/lov_simple_height_editText"
                     android:layout_marginLeft="8dp"
                     android:layout_marginRight="8dp"
                     android:background="@android:color/transparent"
                     android:gravity="right|center_vertical"
-                    android:hint="@string/action_search"
+                    android:hint="@string/lov_simple_action_search"
                     android:imeOptions="actionSearch|flagNoExtractUi"
                     android:inputType="text|textFilter|textAutoComplete"
                     android:maxLines="1"
-                    android:textColor="@color/text_colors_dark"
-                    android:textColorHint="@color/disabledAndHintTextLight"
+                    android:textColor="@color/lov_simple_text_colors_dark"
+                    android:textColorHint="@color/lov_simple_disabledAndHintTextLight"
                     android:textSize="14sp"
                     app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintLeft_toRightOf="@id/btn_clear_search"
-                    app:layout_constraintRight_toLeftOf="@id/btn_back"
+                    app:layout_constraintLeft_toRightOf="@id/lov_simple_btn_clear_search"
+                    app:layout_constraintRight_toLeftOf="@id/lov_simple_btn_back"
                     app:layout_constraintTop_toTopOf="parent" />
 
                 <android.support.v7.widget.AppCompatImageButton
-                    android:id="@+id/btn_clear_search"
-                    android:layout_width="@dimen/config_button_height"
-                    android:layout_height="@dimen/config_button_height"
+                    android:id="@+id/lov_simple_btn_clear_search"
+                    android:layout_width="@dimen/lov_simple_config_button_height"
+                    android:layout_height="@dimen/lov_simple_config_button_height"
                     android:layout_marginLeft="8dp"
-                    android:background="@drawable/bgs_flat_button_transparent_oval"
+                    android:background="@drawable/lov_simple_bgs_flat_button_transparent_oval"
                     android:scaleType="centerInside"
-                    android:src="@drawable/ic_close_grey_600_24dp"
+                    android:src="@drawable/lov_simple_ic_close_grey_600_24dp"
                     android:visibility="visible"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintLeft_toLeftOf="parent"
@@ -76,7 +76,7 @@
             </android.support.constraint.ConstraintLayout>
 
             <android.support.v4.widget.ContentLoadingProgressBar
-                android:id="@+id/progressBar"
+                android:id="@+id/lov_simple_progressBar"
                 style="@style/Widget.AppCompat.ProgressBar.Horizontal"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -95,21 +95,21 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/card_appBar">
+        app:layout_constraintTop_toBottomOf="@id/lov_simple_card_appBar">
 
         <com.mojtaba_shafaei.android.CustomRecyclerView
-            android:id="@+id/list"
+            android:id="@+id/lov_simple_list"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 
         <TextView
-            android:id="@+id/tv_message"
+            android:id="@+id/lov_simple_tv_message"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal|top"
             android:layout_marginTop="16dp"
             android:gravity="center"
-            android:textColor="@color/text_colors_dark"
+            android:textColor="@color/lov_simple_text_colors_dark"
             android:textSize="14sp"
             android:visibility="gone" />
     </FrameLayout>

@@ -2,15 +2,15 @@
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
   <item android:state_pressed="true">
     <shape android:shape="oval">
-      <solid android:color="@color/transparent_white_hex_22"/>
+      <solid android:color="@color/lov_simple_transparent_white_hex_22"/>
     </shape>
   </item>
 
   <item android:state_enabled="false">
     <shape android:shape="oval">
-      <solid android:color="@color/color_flat_button_disabled"/>
+      <solid android:color="@color/lov_simple_color_flat_button_disabled"/>
     </shape>
   </item>
 
-  <item android:drawable="@color/Color_Transparent"/>
+  <item android:drawable="@color/lov_simple_Color_Transparent"/>
 </selector>

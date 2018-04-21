@@ -4,6 +4,6 @@
     <application>
         <activity
             android:name=".LovSimple"
-            android:theme="@style/AppTheme" />
+            android:theme="@style/lov_simple_AppTheme" />
     </application>
 </manifest>

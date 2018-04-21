@@ -85,7 +85,7 @@ public class LovSimple extends AppCompatActivity {
         Intent starter = new Intent(activity, LovSimple.class);
         starter.putExtra(HINT_KEY, searchViewHint);
         activity.startActivityForResult(starter, requestCode);
-        activity.overridePendingTransition(R.anim.anim_slide_in_right, R.anim.anim_slide_out_left);
+        activity.overridePendingTransition(R.anim.lov_simple_anim_slide_in_right, R.anim.lov_simple_anim_slide_out_left);
     }
 
     public static void startForResult(Fragment fragment,
@@ -99,7 +99,7 @@ public class LovSimple extends AppCompatActivity {
             starter.putExtra(HINT_KEY, searchViewHint);
             fragment.startActivityForResult(starter, requestCode);
             fragment.getActivity()
-                    .overridePendingTransition(R.anim.anim_slide_in_right, R.anim.anim_slide_out_left);
+                    .overridePendingTransition(R.anim.lov_simple_anim_slide_in_right, R.anim.lov_simple_anim_slide_out_left);
         } else {
             Log.e(TAG, "startForResult: fragment.getActivity() return null");
         }
@@ -108,7 +108,7 @@ public class LovSimple extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_all_lov);
+        setContentView(R.layout.lov_simple_activity_all_lov);
 
         TYPEFACE_IRANSANS_BOLD = Typeface.createFromAsset(getResources().getAssets(), "IRANSansMobile_Bold.ttf");
         TYPEFACE_IRANSANS_NORMAL = Typeface.createFromAsset(getResources().getAssets(), "IRANSansMobile.ttf");
@@ -136,11 +136,11 @@ public class LovSimple extends AppCompatActivity {
         adapter.setHasStableIds(true);
 
         tvMessage.setTypeface(TYPEFACE_IRANSANS_NORMAL);
-        tvMessage.setText(getString(R.string.no_data1p));
+        tvMessage.setText(getString(R.string.lov_simple_no_data1p));
         recyclerView.setEmptyView(tvMessage);
         recyclerView.setAdapter(adapter);
 
-        findViewById(R.id.btn_back).setOnClickListener((view) -> {
+        findViewById(R.id.lov_simple_btn_back).setOnClickListener((view) -> {
             setResult(RESULT_CANCELED);
             hideSoftKeyboard(searchView);
             finish();
@@ -184,9 +184,9 @@ public class LovSimple extends AppCompatActivity {
                                 return query;
                             })
                             .observeOn(Schedulers.io())
-                            .debounce(getResources().getInteger(R.integer.config_debounce_duration),
+                            .debounce(getResources().getInteger(R.integer.lov_simple_config_debounce_duration),
                                     TimeUnit.MILLISECONDS)
-                            .throttleWithTimeout(getResources().getInteger(R.integer.config_throttle_duration),
+                            .throttleWithTimeout(getResources().getInteger(R.integer.lov_simple_config_throttle_duration),
                                     TimeUnit.MILLISECONDS)
                             .distinctUntilChanged()
                             .switchMap(query -> sLoader.fetch(query))
@@ -308,12 +308,12 @@ public class LovSimple extends AppCompatActivity {
     }
 
     private void initUi() {
-        searchView = findViewById(R.id.search_view);
-        btnClearText = findViewById(R.id.btn_clear_search);
-        recyclerView = findViewById(R.id.list);
-        progressBar = findViewById(R.id.progressBar);
-        tvMessage = findViewById(R.id.tv_message);
-        root = findViewById(R.id.root);
+        searchView = findViewById(R.id.lov_simple_search_view);
+        btnClearText = findViewById(R.id.lov_simple_btn_clear_search);
+        recyclerView = findViewById(R.id.lov_simple_list);
+        progressBar = findViewById(R.id.lov_simple_progressBar);
+        tvMessage = findViewById(R.id.lov_simple_tv_message);
+        root = findViewById(R.id.lov_simple_root);
 
         ViewCompat.setLayoutDirection(root, ViewCompat.LAYOUT_DIRECTION_RTL);
 
@@ -327,7 +327,7 @@ public class LovSimple extends AppCompatActivity {
 
     private void showInternetError() {
         tvMessage.setVisibility(VISIBLE);
-        tvMessage.setText(getString(R.string.no_internet_connection));
+        tvMessage.setText(getString(R.string.lov_simple_no_internet_connection));
     }
 
     @Override

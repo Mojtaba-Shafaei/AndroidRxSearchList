@@ -53,7 +53,7 @@ class LovSimpleAdapter extends RecyclerView.Adapter<ListItemSingleRowHolder> {
 
     @Override
     public ListItemSingleRowHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = inflater.inflate(R.layout.li_simple1, parent, false);
+        View view = inflater.inflate(R.layout.lov_simple_li_simple1, parent, false);
         return new ListItemSingleRowHolder(view);
     }
 

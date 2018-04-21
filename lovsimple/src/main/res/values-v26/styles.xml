@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+    <style name="lov_simple_AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="android:windowContentTransitions">true</item>
-        <item name="android:editTextStyle">@style/App_EditTextStyle</item>
-        <item name="editTextStyle">@style/App_EditTextStyle</item>
-        <item name="textColorError">@color/textInput_error_color_light</item>
+        <item name="android:editTextStyle">@style/lov_simple_App_EditTextStyle</item>
+        <item name="editTextStyle">@style/lov_simple_App_EditTextStyle</item>
+        <item name="textColorError">@color/lov_simple_textInput_error_color_light</item>
     </style>
 
-    <style name="App_EditTextStyle" parent="@android:style/Widget.EditText">
+    <style name="lov_simple_App_EditTextStyle" parent="@android:style/Widget.EditText">
         <item name="android:importantForAutofill">noExcludeDescendants</item>
     </style>
 
