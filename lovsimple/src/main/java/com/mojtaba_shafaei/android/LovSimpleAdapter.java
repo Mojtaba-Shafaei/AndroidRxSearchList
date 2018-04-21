@@ -10,8 +10,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.mojtaba_shafaei.android.LovSimple.Item;
-
 import java.util.List;
 import java.util.Locale;
 
@@ -27,26 +25,26 @@ class LovSimpleAdapter extends RecyclerView.Adapter<ListItemSingleRowHolder> {
     private final java.text.Collator collator;
 
 
-    public LovSimpleAdapter(OnListItemClickListener<Item> onListItemClickListener,
+    public LovSimpleAdapter(OnListItemClickListener<LovSimple.Item> onListItemClickListener,
                             LayoutInflater inflater) {
         this.itemClickListener = onListItemClickListener;
         this.inflater = inflater;
         collator = java.text.Collator.getInstance(new Locale("fa"));
 
-        data = new SortedList<>(LovSimple.Item.class, new SortedListAdapterCallback<Item>(this) {
+        data = new SortedList<>(LovSimple.Item.class, new SortedListAdapterCallback<LovSimple.Item>(this) {
             @Override
-            public int compare(LovSimple.Item f1, Item f2) {
+            public int compare(LovSimple.Item f1, LovSimple.Item f2) {
                 return collator
                         .compare(f1.getPriority() + " " + f1.getDes(), f2.getPriority() + " " + f2.getDes());
             }
 
             @Override
-            public boolean areContentsTheSame(Item oldItem, Item newItem) {
+            public boolean areContentsTheSame(LovSimple.Item oldItem, LovSimple.Item newItem) {
                 return (oldItem.getCode().equals(newItem.getCode()));
             }
 
             @Override
-            public boolean areItemsTheSame(Item oldItem, Item newItem) {
+            public boolean areItemsTheSame(LovSimple.Item oldItem, LovSimple.Item newItem) {
                 return (oldItem.getCode().equals(newItem.getCode()));
             }
         });
@@ -62,7 +60,7 @@ class LovSimpleAdapter extends RecyclerView.Adapter<ListItemSingleRowHolder> {
     @Override
     public void onBindViewHolder(ListItemSingleRowHolder holder, int position) {
         try {
-            Item job = data.get(holder.getAdapterPosition());
+            LovSimple.Item job = data.get(holder.getAdapterPosition());
             holder.getText1().setTypeface(LovSimple.TYPEFACE_IRANSANS_NORMAL);
 
             if (queries != null && queries.length > 0) {
@@ -104,7 +102,7 @@ class LovSimpleAdapter extends RecyclerView.Adapter<ListItemSingleRowHolder> {
         this.queries = queries;
     }
 
-    public void setData(List<Item> list) {
+    public void setData(List<LovSimple.Item> list) {
         data.clear();
         data.addAll(list);
         notifyDataSetChanged();
