@@ -59,7 +59,7 @@ public class LovSimple extends AppCompatActivity {
 
     public interface FetchDataListener {
 
-        Observable<List<Item>> fetch(String query);
+        Observable<Lce<List<Item>>> fetch(String query);
     }
 
     static Typeface TYPEFACE_IRANSANS_BOLD, TYPEFACE_IRANSANS_NORMAL;
@@ -191,10 +191,10 @@ public class LovSimple extends AppCompatActivity {
                             .distinctUntilChanged()
                             .switchMap(query -> sLoader.fetch(query))
                             .observeOn(Schedulers.computation())
-                            .switchMap(list -> {
+                            .switchMap(lce -> {
                                 final String query = getQueryText();
                                 //filter results base on query
-                                if (query.length() > 1) {
+                                if (query.length() > 1 && !lce.isLoading() && !lce.hasError()) {
                                     String[] queries = query.split(" ");
                                     //remove space and 1 char length parts
                                     List<String> ss = new ArrayList<>(Arrays.asList(queries));
@@ -208,7 +208,7 @@ public class LovSimple extends AppCompatActivity {
                                     //
                                     List<Item> results = new ArrayList<>();
                                     int priority;
-                                    for (Item j : list) {
+                                    for (Item j : lce.getData()) {
                                         priority = Integer.MAX_VALUE;
                                         for (String k : queries) {
                                             k = k.toUpperCase();
@@ -233,7 +233,7 @@ public class LovSimple extends AppCompatActivity {
                                     }
                                     return Observable.just(Lce.data(results));
                                 } else {
-                                    return Observable.just(Lce.data(list));
+                                    return Observable.just(lce);
                                 }
                             })
                             .startWith(Lce.loading())

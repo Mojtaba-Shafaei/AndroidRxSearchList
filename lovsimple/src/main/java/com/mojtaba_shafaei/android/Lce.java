@@ -1,85 +1,85 @@
 package com.mojtaba_shafaei.android;
 
-abstract class Lce<T> {
-    static <T> Lce<T> data(final T data) {
+public abstract class Lce<T> {
+    public static <T> Lce<T> data(final T data) {
         return new Lce<T>() {
             @Override
-            boolean isLoading() {
+            public boolean isLoading() {
                 return false;
             }
 
             @Override
-            boolean hasError() {
+            public boolean hasError() {
                 return false;
             }
 
             @Override
-            Throwable getError() {
+            public Throwable getError() {
                 return null;
             }
 
             @Override
-            T getData() {
+            public T getData() {
                 return data;
             }
         };
     }
 
-    static <T> Lce<T> error(final Throwable error) {
+    public static <T> Lce<T> error(final Throwable error) {
         return new Lce<T>() {
             @Override
-            boolean isLoading() {
+            public boolean isLoading() {
                 return false;
             }
 
             @Override
-            boolean hasError() {
+            public boolean hasError() {
                 return true;
             }
 
             @Override
-            Throwable getError() {
+            public Throwable getError() {
                 return error;
             }
 
             @Override
-            T getData() {
+            public T getData() {
                 return null;
             }
         };
     }
 
-    static <T> Lce<T> loading() {
+    public static <T> Lce<T> loading() {
         return new Lce<T>() {
             @Override
-            boolean isLoading() {
+            public boolean isLoading() {
                 return true;
             }
 
             @Override
-            boolean hasError() {
+            public boolean hasError() {
                 return false;
             }
 
             @Override
-            Throwable getError() {
+            public Throwable getError() {
                 return null;
             }
 
             @Override
-            T getData() {
+            public T getData() {
                 return null;
             }
         };
     }
 
-    abstract boolean isLoading();
+    public abstract boolean isLoading();
 
-    abstract boolean hasError();
+    public abstract boolean hasError();
 
-    abstract Throwable getError();
+    public abstract Throwable getError();
 
-    abstract T getData();
+    public abstract T getData();
 
     @Override
     public String toString() {

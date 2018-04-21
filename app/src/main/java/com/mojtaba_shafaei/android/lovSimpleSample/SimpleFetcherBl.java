@@ -2,6 +2,7 @@ package com.mojtaba_shafaei.android.lovSimpleSample;
 
 import android.util.Log;
 
+import com.mojtaba_shafaei.android.Lce;
 import com.mojtaba_shafaei.android.LovSimple;
 
 import java.util.ArrayList;
@@ -12,7 +13,7 @@ public class SimpleFetcherBl implements LovSimple.FetchDataListener {
 
 
     @Override
-    public io.reactivex.Observable<List<LovSimple.Item>> fetch(String query) {
+    public io.reactivex.Observable<Lce<List<LovSimple.Item>>> fetch(String query) {
         Log.d(TAG, "query = " + query);
         List<LovSimple.Item> items = new ArrayList<>();
         items.add(new Job("1", "شغل یک از یک", 1));
@@ -40,6 +41,6 @@ public class SimpleFetcherBl implements LovSimple.FetchDataListener {
 
 //        List<LovSimple.Item> result =  new ArrayList<>();
 
-        return io.reactivex.Observable.just(items);
+        return io.reactivex.Observable.just(Lce.data(items));
     }
 }
