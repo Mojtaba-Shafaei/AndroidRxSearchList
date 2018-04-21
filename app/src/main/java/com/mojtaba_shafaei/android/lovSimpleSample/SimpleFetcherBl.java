@@ -10,8 +10,9 @@ import java.util.List;
 public class SimpleFetcherBl implements LovSimple.FetchDataListener {
     private static final String TAG = "SimpleFetcherBl";
 
+
     @Override
-    public List<LovSimple.Item> fetch(String query) {
+    public io.reactivex.Observable<List<LovSimple.Item>> fetch(String query) {
         Log.d(TAG, "query = " + query);
         List<LovSimple.Item> items = new ArrayList<>();
         items.add(new Job("1", "شغل یک از یک", 1));
@@ -39,6 +40,6 @@ public class SimpleFetcherBl implements LovSimple.FetchDataListener {
 
 //        List<LovSimple.Item> result =  new ArrayList<>();
 
-        return items;
+        return io.reactivex.Observable.just(items);
     }
 }

@@ -59,7 +59,7 @@ public class LovSimple extends AppCompatActivity {
 
     public interface FetchDataListener {
 
-        List<Item> fetch(String query);
+        Observable<List<Item>> fetch(String query);
     }
 
     static Typeface TYPEFACE_IRANSANS_BOLD, TYPEFACE_IRANSANS_NORMAL;
@@ -189,7 +189,7 @@ public class LovSimple extends AppCompatActivity {
                             .throttleWithTimeout(getResources().getInteger(R.integer.config_throttle_duration),
                                     TimeUnit.MILLISECONDS)
                             .distinctUntilChanged()
-                            .switchMap(query -> Observable.just(sLoader.fetch(query)))
+                            .switchMap(query -> sLoader.fetch(query))
                             .observeOn(Schedulers.computation())
                             .switchMap(list -> {
                                 final String query = getQueryText();
