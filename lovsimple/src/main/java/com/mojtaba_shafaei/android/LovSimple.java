@@ -1,7 +1,11 @@
 package com.mojtaba_shafaei.android;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.ObjectAnimator;
 import android.content.Intent;
 import android.graphics.Typeface;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -15,7 +19,9 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.WindowManager;
+import android.view.animation.AccelerateInterpolator;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.TextView;
@@ -39,6 +45,7 @@ import static android.view.View.VISIBLE;
 
 public class LovSimple extends AppCompatActivity {
     private static final String TAG = LovSimple.class.getSimpleName();
+
 
     static final String HINT_KEY = "HINT_KEY";
 
@@ -70,6 +77,7 @@ public class LovSimple extends AppCompatActivity {
     private ContentLoadingProgressBar progressBar;
     private TextView tvMessage;
     private ViewGroup root;
+    private AppCompatImageButton btnBack;
     //</editor-fold>
 
     private LovSimpleAdapter adapter;
@@ -127,7 +135,7 @@ public class LovSimple extends AppCompatActivity {
                 intent.putExtra("data", Parcels.wrap(data));
                 setResult(RESULT_OK, intent);
 
-                finish();
+                finishActivity();
             } catch (Exception e) {
                 Log.e(TAG, "onListItemClicked", e);
             }
@@ -140,10 +148,30 @@ public class LovSimple extends AppCompatActivity {
         recyclerView.setEmptyView(tvMessage);
         recyclerView.setAdapter(adapter);
 
-        findViewById(R.id.lov_simple_btn_back).setOnClickListener((view) -> {
+        btnBack.setOnClickListener((view) -> {
             setResult(RESULT_CANCELED);
             hideSoftKeyboard(searchView);
-            finish();
+
+            btnBack.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+                    if (btnBack.getViewTreeObserver().isAlive()) {
+                        btnBack.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                        float value = ((View) btnBack.getParent()).getRight() - btnBack.getRight() + btnBack.getWidth();
+                        ObjectAnimator animator = ObjectAnimator.ofFloat(btnBack, "translationX", value);
+                        animator.setInterpolator(new AccelerateInterpolator());
+                        animator.setDuration(300);
+                        animator.addListener(new AnimatorListenerAdapter() {
+                            @Override
+                            public void onAnimationEnd(Animator animation) {
+                                super.onAnimationEnd(animation);
+                                finishActivity();
+                            }
+                        });
+                        animator.start();
+                    }
+                }
+            });
         });
         btnClearText.setOnClickListener((view -> searchView.setText("")));
 
@@ -314,6 +342,7 @@ public class LovSimple extends AppCompatActivity {
         progressBar = findViewById(R.id.lov_simple_progressBar);
         tvMessage = findViewById(R.id.lov_simple_tv_message);
         root = findViewById(R.id.lov_simple_root);
+        btnBack = findViewById(R.id.lov_simple_btn_back);
 
         ViewCompat.setLayoutDirection(root, ViewCompat.LAYOUT_DIRECTION_RTL);
 
@@ -343,10 +372,12 @@ public class LovSimple extends AppCompatActivity {
         sLoader = null;
     }
 
-    @Override
-    public void finish() {
-        super.finish();
-        overridePendingTransition(android.R.anim.slide_in_left, android.R.anim.slide_out_right);
+    private void finishActivity() {
+        if (Build.VERSION.SDK_INT >= 21) {
+            finishAfterTransition();
+        } else {
+            finish();
+        }
     }
 
     public abstract static class Lce<T> {

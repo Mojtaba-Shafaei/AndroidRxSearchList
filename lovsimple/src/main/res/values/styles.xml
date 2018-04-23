@@ -3,5 +3,8 @@
 
     <style name="lov_simple_AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="textColorError">@color/lov_simple_textInput_error_color_light</item>
+        <item name="android:windowBackground">@color/lov_simple_blue_grey50</item>
+        <item name="android:windowEnterAnimation">@anim/lov_simple_anim_slide_in_right</item>
+        <item name="android:windowExitAnimation">@anim/lov_simple_anim_slide_out_left</item>
     </style>
 </resources>
