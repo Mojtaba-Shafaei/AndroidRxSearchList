@@ -5,12 +5,15 @@ import static android.view.View.VISIBLE;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
+import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Typeface;
-import android.os.Build;
+import android.os.Build.VERSION;
+import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.widget.ContentLoadingProgressBar;
@@ -18,12 +21,15 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatEditText;
 import android.support.v7.widget.AppCompatImageButton;
 import android.support.v7.widget.LinearLayoutManager;
+import android.transition.Explode;
+import android.transition.Slide;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.view.ViewTreeObserver.OnGlobalLayoutListener;
+import android.view.Window;
 import android.view.WindowManager;
-import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
@@ -83,7 +89,7 @@ public class LovSimple extends AppCompatActivity {
   private final CompositeDisposable disposable = new CompositeDisposable();
   private static FetchDataListener sLoader;
 
-  public static void startForResult(AppCompatActivity activity,
+  public static void startForResult(Activity activity,
       int requestCode,
       String searchViewHint,
       FetchDataListener loader) {
@@ -91,9 +97,9 @@ public class LovSimple extends AppCompatActivity {
     sLoader = loader;
     Intent starter = new Intent(activity, LovSimple.class);
     starter.putExtra(HINT_KEY, searchViewHint);
-    activity.startActivityForResult(starter, requestCode);
-    activity.overridePendingTransition(R.anim.lov_simple_anim_slide_in_right,
-        R.anim.lov_simple_anim_slide_out_left);
+    ActivityCompat.startActivityForResult(activity, starter, requestCode, null);
+    /*activity.overridePendingTransition(R.anim.lov_simple_anim_slide_in_right,
+        R.anim.lov_simple_anim_slide_out_left);*/
   }
 
   public static void startForResult(Fragment fragment,
@@ -106,9 +112,9 @@ public class LovSimple extends AppCompatActivity {
       Intent starter = new Intent(fragment.getActivity(), LovSimple.class);
       starter.putExtra(HINT_KEY, searchViewHint);
       fragment.startActivityForResult(starter, requestCode);
-      fragment.getActivity()
+      /*fragment.getActivity()
           .overridePendingTransition(R.anim.lov_simple_anim_slide_in_right,
-              R.anim.lov_simple_anim_slide_out_left);
+              R.anim.lov_simple_anim_slide_out_left);*/
     } else {
       Log.e(TAG, "startForResult: fragment.getActivity() return null");
     }
@@ -136,8 +142,7 @@ public class LovSimple extends AppCompatActivity {
         Intent intent = new Intent();
         intent.putExtra("data", Parcels.wrap(data));
         setResult(RESULT_OK, intent);
-
-        finishActivity();
+        supportFinishAfterTransition();
       } catch (Exception e) {
         Log.e(TAG, "onListItemClicked", e);
       }
@@ -155,7 +160,7 @@ public class LovSimple extends AppCompatActivity {
       hideSoftKeyboard(searchView);
 
       btnBack.getViewTreeObserver()
-          .addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+          .addOnGlobalLayoutListener(new OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
               if (btnBack.getViewTreeObserver().isAlive()) {
@@ -169,7 +174,7 @@ public class LovSimple extends AppCompatActivity {
                   @Override
                   public void onAnimationEnd(Animator animation) {
                     super.onAnimationEnd(animation);
-                    finishActivity();
+                    supportFinishAfterTransition();
                   }
                 });
                 animator.start();
@@ -390,14 +395,6 @@ public class LovSimple extends AppCompatActivity {
   public void onDetachedFromWindow() {
     super.onDetachedFromWindow();
     sLoader = null;
-  }
-
-  private void finishActivity() {
-    if (Build.VERSION.SDK_INT >= 21) {
-      finishAfterTransition();
-    } else {
-      finish();
-    }
   }
 
   public abstract static class Lce<T> {
