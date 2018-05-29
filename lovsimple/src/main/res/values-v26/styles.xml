@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
   <style name="lov_simple_AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
     <item name="android:windowContentTransitions">true</item>
     <item name="android:editTextStyle">@style/lov_simple_App_EditTextStyle</item>

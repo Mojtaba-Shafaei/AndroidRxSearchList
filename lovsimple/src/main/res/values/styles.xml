@@ -5,6 +5,7 @@
     <item name="textColorError">@color/lov_simple_textInput_error_color_light</item>
     <item name="android:windowBackground">@color/lov_simple_blue_grey50</item>
     <item name="android:windowAnimationStyle">@style/lov_simple_ActivityAnimation</item>
+
   </style>
 
   <style name="lov_simple_ActivityAnimation">
