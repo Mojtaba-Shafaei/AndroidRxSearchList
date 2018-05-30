@@ -1,46 +1,54 @@
 package com.mojtaba_shafaei.android.lovSimpleSample;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.TextView;
-
 import com.mojtaba_shafaei.android.LovSimple;
-
-import org.parceler.Parcels;
+import com.mojtaba_shafaei.android.LovSimple.Item;
 
 public class MainActivity extends AppCompatActivity {
 
-    private String TAG = getClass().getSimpleName();
-    private TextView textView;
+  private String TAG = getClass().getSimpleName();
+  private TextView textView;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+  @Override
+  protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    setContentView(R.layout.activity_main);
 
-        findViewById(R.id.button).setOnClickListener(view ->
-                LovSimple.startForResult(getActivity()
-                        , 100
-                        , "Search Jobs"
-                        , new SimpleFetcherBl()));
+    findViewById(R.id.button).setOnClickListener(view ->
+        LovSimple.start(getActivity()
+            , "Search Jobs"
+            , new SimpleFetcherBl()
+            , this::displayItem)
+    );
 
-        textView = findViewById(R.id.tvResult);
+    textView = findViewById(R.id.tvResult);
+
+    if (savedInstanceState != null && savedInstanceState.containsKey("item")) {
+      textView.setText(savedInstanceState.getString("item"));
     }
+  }
 
-    private AppCompatActivity getActivity() {
-        return this;
-    }
+  private void displayItem(Item item) {
+    if (item != null) {
+      Log.d(TAG, "displayItem : " + item.getDes());
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        Log.d(TAG, "onActivityResult: ");
-        if (resultCode == RESULT_OK) {
-            Job job = Parcels.unwrap(data.getParcelableExtra("data"));
-            Log.d(TAG, "onActivityResult: " + job.toString());
-            textView.setText(job.toString());
-        }
+      Job job = (Job) item;
+      textView.setText(job.toString());
+    } else {
+      Log.d(TAG, "displayItem : JUST returned");
     }
+  }
+
+  private AppCompatActivity getActivity() {
+    return this;
+  }
+
+  @Override
+  protected void onSaveInstanceState(Bundle outState) {
+    outState.putString("item", textView.getText().toString());
+    super.onSaveInstanceState(outState);
+  }
 }

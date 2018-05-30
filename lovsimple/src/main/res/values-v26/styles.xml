@@ -5,7 +5,6 @@
     <item name="android:windowContentTransitions">true</item>
     <item name="android:editTextStyle">@style/lov_simple_App_EditTextStyle</item>
     <item name="editTextStyle">@style/lov_simple_App_EditTextStyle</item>
-    <item name="textColorError">@color/lov_simple_textInput_error_color_light</item>
 
     <item name="android:windowAnimationStyle">@style/lov_simple_ActivityAnimation</item>
   </style>

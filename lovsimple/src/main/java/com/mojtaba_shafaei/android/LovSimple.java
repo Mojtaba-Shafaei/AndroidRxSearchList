@@ -1,34 +1,32 @@
 package com.mojtaba_shafaei.android;
 
+import static android.content.Context.INPUT_METHOD_SERVICE;
 import static android.view.View.VISIBLE;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
-import android.app.Activity;
-import android.content.Intent;
 import android.graphics.Typeface;
-import android.os.Build.VERSION;
-import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.widget.ContentLoadingProgressBar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.app.AppCompatDialogFragment;
 import android.support.v7.widget.AppCompatEditText;
 import android.support.v7.widget.AppCompatImageButton;
 import android.support.v7.widget.LinearLayoutManager;
-import android.transition.Explode;
-import android.transition.Slide;
+import android.text.TextUtils;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.ViewTreeObserver.OnGlobalLayoutListener;
-import android.view.Window;
 import android.view.WindowManager;
 import android.view.animation.DecelerateInterpolator;
 import android.view.inputmethod.EditorInfo;
@@ -45,14 +43,11 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import org.parceler.Parcels;
 
-public class LovSimple extends AppCompatActivity {
+public class LovSimple extends AppCompatDialogFragment {
 
   private static final String TAG = LovSimple.class.getSimpleName();
-
-
-  static final String HINT_KEY = "HINT_KEY";
+  private String searchViewHint;
 
   public interface Item {
 
@@ -71,7 +66,7 @@ public class LovSimple extends AppCompatActivity {
 
   public interface FetchDataListener {
 
-    Observable<Lce<List<Item>>> fetch(String query);
+    Observable<List<Item>> fetch(String query);
   }
 
   static Typeface TYPEFACE_IRANSANS_BOLD, TYPEFACE_IRANSANS_NORMAL;
@@ -87,67 +82,78 @@ public class LovSimple extends AppCompatActivity {
 
   private LovSimpleAdapter adapter;
   private final CompositeDisposable disposable = new CompositeDisposable();
-  private static FetchDataListener sLoader;
 
-  public static void startForResult(Activity activity,
-      int requestCode,
+  /////////////////////////////////////
+  private FetchDataListener sLoader;
+  private OnResultListener mOnResultListener;
+
+  /////////////////////////////////////
+//
+  public static void start(AppCompatActivity activity,
       String searchViewHint,
-      FetchDataListener loader) {
+      FetchDataListener loader,
+      OnResultListener onResultListener) {
 
-    sLoader = loader;
-    Intent starter = new Intent(activity, LovSimple.class);
-    starter.putExtra(HINT_KEY, searchViewHint);
-    ActivityCompat.startActivityForResult(activity, starter, requestCode, null);
-    /*activity.overridePendingTransition(R.anim.lov_simple_anim_slide_in_right,
-        R.anim.lov_simple_anim_slide_out_left);*/
+    LovSimple lovSimple = new LovSimple();
+    lovSimple.sLoader = loader;
+    lovSimple.mOnResultListener = onResultListener;
+    lovSimple.searchViewHint = searchViewHint;
+    lovSimple.show(activity.getSupportFragmentManager(), "");
+
   }
 
-  public static void startForResult(Fragment fragment,
-      int requestCode,
+  public static void start(Fragment fragment,
       String searchViewHint,
-      FetchDataListener loader) {
+      FetchDataListener loader,
+      OnResultListener onResultListener) {
 
-    sLoader = loader;
-    if (fragment.getActivity() != null) {
-      Intent starter = new Intent(fragment.getActivity(), LovSimple.class);
-      starter.putExtra(HINT_KEY, searchViewHint);
-      fragment.startActivityForResult(starter, requestCode);
-      /*fragment.getActivity()
-          .overridePendingTransition(R.anim.lov_simple_anim_slide_in_right,
-              R.anim.lov_simple_anim_slide_out_left);*/
+    LovSimple lovSimple = new LovSimple();
+    lovSimple.sLoader = loader;
+    lovSimple.mOnResultListener = onResultListener;
+    lovSimple.searchViewHint = searchViewHint;
+
+    if (fragment.getFragmentManager() != null) {
+      //lovSimple.show(fragment.getFragmentManager(), "");
     } else {
-      Log.e(TAG, "startForResult: fragment.getActivity() return null");
+      Log.e(TAG, "start: fragment.getFragmentManager() return null");
     }
   }
 
   @Override
-  protected void onCreate(@Nullable Bundle savedInstanceState) {
+  public void onCreate(@Nullable Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    setContentView(R.layout.lov_simple_activity_all_lov);
+    setStyle(DialogFragment.STYLE_NO_TITLE,
+        R.style.ThemeOverlay_AppCompat_Light);
+  }
 
+  @Nullable
+  @Override
+  public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup __,
+      @Nullable Bundle savedInstanceState) {
+
+    View view = inflater.inflate(R.layout.lov_simple_activity_all_lov, null);
     TYPEFACE_IRANSANS_BOLD = Typeface
         .createFromAsset(getResources().getAssets(), "IRANSansMobile_Bold.ttf");
     TYPEFACE_IRANSANS_NORMAL = Typeface
         .createFromAsset(getResources().getAssets(), "IRANSansMobile.ttf");
 
-    initUi();
+    initUi(view);
 
-    String hint = getIntent().getStringExtra(HINT_KEY);
-    searchView.setHint(hint != null ? hint : "");
+    searchView.setHint(TextUtils.isEmpty(searchViewHint) ? "" : searchViewHint);
 
-    recyclerView.setLayoutManager(new LinearLayoutManager(this));
+    recyclerView.setLayoutManager(
+        new LinearLayoutManager(inflater.getContext(), LinearLayoutManager.VERTICAL, false));
     recyclerView.setHasFixedSize(true);
     adapter = new LovSimpleAdapter((position, data) -> {
       try {
-        Intent intent = new Intent();
-        intent.putExtra("data", Parcels.wrap(data));
-        setResult(RESULT_OK, intent);
-        supportFinishAfterTransition();
+        mOnResultListener.onResult(data);
+        dismiss();
       } catch (Exception e) {
         Log.e(TAG, "onListItemClicked", e);
       }
 
-    }, getLayoutInflater());
+    }, LayoutInflater.from(inflater.getContext()));
+
     adapter.setHasStableIds(true);
 
     tvMessage.setTypeface(TYPEFACE_IRANSANS_NORMAL);
@@ -155,57 +161,66 @@ public class LovSimple extends AppCompatActivity {
     recyclerView.setEmptyView(tvMessage);
     recyclerView.setAdapter(adapter);
 
-    btnBack.setOnClickListener((view) -> {
-      setResult(RESULT_CANCELED);
-      hideSoftKeyboard(searchView);
+    btnBack.setOnClickListener(new OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        mOnResultListener.onResult(null);
+        hideSoftKeyboard(searchView);
 
-      btnBack.getViewTreeObserver()
-          .addOnGlobalLayoutListener(new OnGlobalLayoutListener() {
-            @Override
-            public void onGlobalLayout() {
-              if (btnBack.getViewTreeObserver().isAlive()) {
-                btnBack.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-                float value = ((View) btnBack.getParent()).getRight() - btnBack.getRight() + btnBack
-                    .getWidth();
-                ObjectAnimator animator = ObjectAnimator.ofFloat(btnBack, "translationX", value);
-                animator.setInterpolator(new DecelerateInterpolator(.8F));
-                animator.setDuration(300);
-                animator.addListener(new AnimatorListenerAdapter() {
-                  @Override
-                  public void onAnimationEnd(Animator animation) {
-                    super.onAnimationEnd(animation);
-                    supportFinishAfterTransition();
-                  }
-                });
-                animator.start();
+        btnBack.getViewTreeObserver()
+            .addOnGlobalLayoutListener(new OnGlobalLayoutListener() {
+              @Override
+              public void onGlobalLayout() {
+                if (btnBack.getViewTreeObserver().isAlive()) {
+                  btnBack.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                  float value =
+                      ((View) btnBack.getParent()).getRight() - btnBack.getRight() + btnBack
+                          .getWidth();
+                  ObjectAnimator animator = ObjectAnimator.ofFloat(btnBack, "translationX", value);
+                  animator.setInterpolator(new DecelerateInterpolator(.8F));
+                  animator.setDuration(300);
+                  animator.addListener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                      super.onAnimationEnd(animation);
+                      dismiss();
+                    }
+                  });
+                  animator.start();
+                }
               }
-            }
-          });
+            });
+      }
     });
-    btnClearText.setOnClickListener((view -> searchView.setText("")));
 
+    btnClearText.setOnClickListener(v -> searchView.setText(""));
+
+    return view;
   }
 
   private void hideSoftKeyboard(AppCompatEditText searchView) {
-    if (searchView != null) {
-      InputMethodManager inputManager = (InputMethodManager)
-          getSystemService(INPUT_METHOD_SERVICE);
-      inputManager.hideSoftInputFromInputMethod(searchView.getWindowToken(), 0);
-      inputManager.hideSoftInputFromWindow(searchView.getApplicationWindowToken(), 0);
+    try {
+      if (searchView != null) {
+        InputMethodManager inputManager = (InputMethodManager)
+            searchView.getContext().getSystemService(INPUT_METHOD_SERVICE);
+        inputManager.hideSoftInputFromInputMethod(searchView.getWindowToken(), 0);
+        inputManager.hideSoftInputFromWindow(searchView.getApplicationWindowToken(), 0);
 
-      getWindow().setSoftInputMode(
-          WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
+        getDialog().getWindow().setSoftInputMode(
+            WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
 
-      searchView.clearFocus();
-      searchView.setSelected(false);
+        searchView.clearFocus();
+        searchView.setSelected(false);
+      }
+    } catch (Exception e) {
+      Log.e(TAG, "hideSoftKeyboard: ", e);
     }
   }
 
   @Override
-  public void onAttachedToWindow() {
-    super.onAttachedToWindow();
+  public void onStart() {
+    super.onStart();
     tvMessage.setVisibility(View.GONE);
-
     try {
       disposable.add(
           RxSearch.fromEdiText(searchView)
@@ -229,10 +244,10 @@ public class LovSimple extends AppCompatActivity {
               .distinctUntilChanged()
               .switchMap(query -> sLoader.fetch(query))
               .observeOn(Schedulers.computation())
-              .switchMap(lce -> {
+              .switchMap(data -> {
                 final String query = getQueryText();
                 //filter results base on query
-                if (query.length() > 1 && !lce.isLoading() && !lce.hasError()) {
+                if (query.length() > 1) {
                   String[] queries = query.split(" ");
                   //remove space and 1 char length parts
                   List<String> ss = new ArrayList<>(Arrays.asList(queries));
@@ -246,7 +261,7 @@ public class LovSimple extends AppCompatActivity {
                   //
                   List<Item> results = new ArrayList<>();
                   int priority;
-                  for (Item j : lce.getData()) {
+                  for (Item j : data) {
                     priority = Integer.MAX_VALUE;
                     for (String k : queries) {
                       k = k.toUpperCase();
@@ -271,7 +286,7 @@ public class LovSimple extends AppCompatActivity {
                   }
                   return Observable.just(Lce.data(results));
                 } else {
-                  return Observable.just(lce);
+                  return Observable.just(Lce.data(data));
                 }
               })
               .startWith(Lce.loading())
@@ -345,14 +360,14 @@ public class LovSimple extends AppCompatActivity {
     return searchView.getText().toString().toLowerCase().trim();
   }
 
-  private void initUi() {
-    searchView = findViewById(R.id.lov_simple_search_view);
-    btnClearText = findViewById(R.id.lov_simple_btn_clear_search);
-    recyclerView = findViewById(R.id.lov_simple_list);
-    progressBar = findViewById(R.id.lov_simple_progressBar);
-    tvMessage = findViewById(R.id.lov_simple_tv_message);
-    root = findViewById(R.id.lov_simple_root);
-    btnBack = findViewById(R.id.lov_simple_btn_back);
+  private void initUi(View root) {
+    searchView = root.findViewById(R.id.lov_simple_search_view);
+    btnClearText = root.findViewById(R.id.lov_simple_btn_clear_search);
+    recyclerView = root.findViewById(R.id.lov_simple_list);
+    progressBar = root.findViewById(R.id.lov_simple_progressBar);
+    tvMessage = root.findViewById(R.id.lov_simple_tv_message);
+    root = root.findViewById(R.id.lov_simple_root);
+    btnBack = root.findViewById(R.id.lov_simple_btn_back);
 
     ViewCompat.setLayoutDirection(root, ViewCompat.LAYOUT_DIRECTION_RTL);
 
@@ -385,21 +400,37 @@ public class LovSimple extends AppCompatActivity {
   }
 
   @Override
-  protected void onPause() {
-    hideSoftKeyboard(searchView);
-    super.onPause();
-    disposable.clear();
+  public void onResume() {
+    super.onResume();
+/*    try {
+      getDialog().getWindow()
+          .setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }*/
   }
 
   @Override
-  public void onDetachedFromWindow() {
-    super.onDetachedFromWindow();
-    sLoader = null;
+  public void onPause() {
+    hideSoftKeyboard(searchView);
+    disposable.clear();
+
+    super.onPause();
+    dismiss();
   }
 
-  public abstract static class Lce<T> {
+  @Override
+  public void onDestroy() {
+    sLoader = null;
+    mOnResultListener = null;
 
-    public static <T> Lce<T> data(final T data) {
+    super.onDestroy();
+  }
+
+
+  abstract static class Lce<T> {
+
+    static <T> Lce<T> data(final T data) {
       return new Lce<T>() {
         @Override
         public boolean isLoading() {
@@ -423,7 +454,7 @@ public class LovSimple extends AppCompatActivity {
       };
     }
 
-    public static <T> Lce<T> error(final Throwable error) {
+    static <T> Lce<T> error(final Throwable error) {
       return new Lce<T>() {
         @Override
         public boolean isLoading() {
@@ -447,7 +478,7 @@ public class LovSimple extends AppCompatActivity {
       };
     }
 
-    public static <T> Lce<T> loading() {
+    static <T> Lce<T> loading() {
       return new Lce<T>() {
         @Override
         public boolean isLoading() {
@@ -485,5 +516,10 @@ public class LovSimple extends AppCompatActivity {
           ", hasError = " + (hasError() ? hasError() + "[" + getError() + "]" : hasError()) +
           ", data = " + getData() + "}";
     }
+  }
+
+  public interface OnResultListener {
+
+    void onResult(Item item);
   }
 }

@@ -2,7 +2,6 @@
 <resources>
     <style name="lov_simple_AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="android:windowContentTransitions">true</item>
-        <item name="textColorError">@color/lov_simple_textInput_error_color_light</item>
         <item name="android:windowAnimationStyle">@style/lov_simple_ActivityAnimation</item>
         <item name="android:windowAllowEnterTransitionOverlap">true</item>
         <item name="android:windowAllowReturnTransitionOverlap">true</item>
