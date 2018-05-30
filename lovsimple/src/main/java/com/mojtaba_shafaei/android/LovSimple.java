@@ -18,7 +18,6 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.widget.ContentLoadingProgressBar;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.AppCompatDialogFragment;
 import android.support.v7.widget.AppCompatEditText;
 import android.support.v7.widget.AppCompatImageButton;
@@ -95,48 +94,16 @@ public class LovSimple extends AppCompatDialogFragment {
 
   /////////////////////////////////////
 //
-  private static LovSimple start(AppCompatActivity activity,
+  private static LovSimple start(android.support.v4.app.FragmentManager fragmentManager,
       String searchViewHint,
-      FetchDataListener loader,
-      OnResultListener onResultListener,
-      Dialog.OnCancelListener onCancelListener,
-      Dialog.OnDismissListener onDismissListener
-  ) {
+      FetchDataListener loader) {
 
     LovSimple lovSimple = new LovSimple();
     lovSimple.sLoader = loader;
-    lovSimple.mOnResultListener = onResultListener;
-    lovSimple.mOnCancelListener = onCancelListener;
-    lovSimple.mOnDismissListener = onDismissListener;
-
     lovSimple.searchViewHint = searchViewHint;
-    lovSimple.show(activity.getSupportFragmentManager(), "");
+    lovSimple.show(fragmentManager, "");
 
     return lovSimple;
-  }
-
-  public static LovSimple start(AppCompatActivity activity,
-      String searchViewHint,
-      FetchDataListener loader
-  ) {
-    return start(activity, searchViewHint, loader, null, null, null);
-  }
-
-  public static void start(Fragment fragment,
-      String searchViewHint,
-      FetchDataListener loader,
-      OnResultListener onResultListener) {
-
-    LovSimple lovSimple = new LovSimple();
-    lovSimple.sLoader = loader;
-    lovSimple.mOnResultListener = onResultListener;
-    lovSimple.searchViewHint = searchViewHint;
-
-    if (fragment.getFragmentManager() != null) {
-      //lovSimple.show(fragment.getFragmentManager(), "");
-    } else {
-      Log.e(TAG, "start: fragment.getFragmentManager() return null");
-    }
   }
 
   @Override
