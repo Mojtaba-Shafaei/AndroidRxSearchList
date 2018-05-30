@@ -18,7 +18,7 @@ public class MainActivity extends AppCompatActivity {
     setContentView(R.layout.activity_main);
 
     findViewById(R.id.button).setOnClickListener(view ->
-        LovSimple.start(getActivity()
+        LovSimple.start(getSupportFragmentManager()
             , "Search Jobs"
             , new SimpleFetcherBl())
             .setOnResultListener(this::displayItem)
