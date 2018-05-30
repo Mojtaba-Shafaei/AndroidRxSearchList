@@ -20,8 +20,14 @@ public class MainActivity extends AppCompatActivity {
     findViewById(R.id.button).setOnClickListener(view ->
         LovSimple.start(getActivity()
             , "Search Jobs"
-            , new SimpleFetcherBl()
-            , this::displayItem)
+            , new SimpleFetcherBl())
+            .setOnResultListener(this::displayItem)
+            .setOnCancelListener(dialog -> {
+              Log.d(TAG, "cancelled: ");
+            })
+            .setOnDismissListener(dialog -> {
+              Log.d(TAG, "dismissed: ");
+            })
     );
 
     textView = findViewById(R.id.tvResult);

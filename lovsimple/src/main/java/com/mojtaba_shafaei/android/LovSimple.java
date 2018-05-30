@@ -6,6 +6,10 @@ import static android.view.View.VISIBLE;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
+import android.app.Dialog;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnCancelListener;
+import android.content.DialogInterface.OnDismissListener;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -86,20 +90,36 @@ public class LovSimple extends AppCompatDialogFragment {
   /////////////////////////////////////
   private FetchDataListener sLoader;
   private OnResultListener mOnResultListener;
+  private Dialog.OnCancelListener mOnCancelListener;
+  private Dialog.OnDismissListener mOnDismissListener;
 
   /////////////////////////////////////
 //
-  public static void start(AppCompatActivity activity,
+  private static LovSimple start(AppCompatActivity activity,
       String searchViewHint,
       FetchDataListener loader,
-      OnResultListener onResultListener) {
+      OnResultListener onResultListener,
+      Dialog.OnCancelListener onCancelListener,
+      Dialog.OnDismissListener onDismissListener
+  ) {
 
     LovSimple lovSimple = new LovSimple();
     lovSimple.sLoader = loader;
     lovSimple.mOnResultListener = onResultListener;
+    lovSimple.mOnCancelListener = onCancelListener;
+    lovSimple.mOnDismissListener = onDismissListener;
+
     lovSimple.searchViewHint = searchViewHint;
     lovSimple.show(activity.getSupportFragmentManager(), "");
 
+    return lovSimple;
+  }
+
+  public static LovSimple start(AppCompatActivity activity,
+      String searchViewHint,
+      FetchDataListener loader
+  ) {
+    return start(activity, searchViewHint, loader, null, null, null);
   }
 
   public static void start(Fragment fragment,
@@ -146,7 +166,7 @@ public class LovSimple extends AppCompatDialogFragment {
     recyclerView.setHasFixedSize(true);
     adapter = new LovSimpleAdapter((position, data) -> {
       try {
-        mOnResultListener.onResult(data);
+        onResult(data);
         dismiss();
       } catch (Exception e) {
         Log.e(TAG, "onListItemClicked", e);
@@ -164,7 +184,7 @@ public class LovSimple extends AppCompatDialogFragment {
     btnBack.setOnClickListener(new OnClickListener() {
       @Override
       public void onClick(View v) {
-        mOnResultListener.onResult(null);
+        onCancel(LovSimple.this.getDialog());
         hideSoftKeyboard(searchView);
 
         btnBack.getViewTreeObserver()
@@ -198,22 +218,24 @@ public class LovSimple extends AppCompatDialogFragment {
     return view;
   }
 
+  private void onResult(Item data) {
+    if (mOnResultListener != null) {
+      mOnResultListener.onResult(data);
+    }
+  }
+
   private void hideSoftKeyboard(AppCompatEditText searchView) {
-    try {
-      if (searchView != null) {
-        InputMethodManager inputManager = (InputMethodManager)
-            searchView.getContext().getSystemService(INPUT_METHOD_SERVICE);
-        inputManager.hideSoftInputFromInputMethod(searchView.getWindowToken(), 0);
-        inputManager.hideSoftInputFromWindow(searchView.getApplicationWindowToken(), 0);
+    if (searchView != null) {
+      InputMethodManager inputManager = (InputMethodManager)
+          searchView.getContext().getSystemService(INPUT_METHOD_SERVICE);
+      inputManager.hideSoftInputFromInputMethod(searchView.getWindowToken(), 0);
+      inputManager.hideSoftInputFromWindow(searchView.getApplicationWindowToken(), 0);
 
-        getDialog().getWindow().setSoftInputMode(
-            WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
+      getDialog().getWindow().setSoftInputMode(
+          WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
 
-        searchView.clearFocus();
-        searchView.setSelected(false);
-      }
-    } catch (Exception e) {
-      Log.e(TAG, "hideSoftKeyboard: ", e);
+      searchView.clearFocus();
+      searchView.setSelected(false);
     }
   }
 
@@ -399,6 +421,21 @@ public class LovSimple extends AppCompatDialogFragment {
     tvMessage.setText(getString(R.string.lov_simple_no_internet_connection));
   }
 
+  public LovSimple setOnResultListener(OnResultListener mOnResultListener) {
+    this.mOnResultListener = mOnResultListener;
+    return this;
+  }
+
+  public LovSimple setOnCancelListener(OnCancelListener mOnCancelListener) {
+    this.mOnCancelListener = mOnCancelListener;
+    return this;
+  }
+
+  public LovSimple setOnDismissListener(OnDismissListener mOnDismissListener) {
+    this.mOnDismissListener = mOnDismissListener;
+    return this;
+  }
+
   @Override
   public void onResume() {
     super.onResume();
@@ -427,6 +464,21 @@ public class LovSimple extends AppCompatDialogFragment {
     super.onDestroy();
   }
 
+  @Override
+  public void onDismiss(DialogInterface dialog) {
+    if (mOnDismissListener != null) {
+      mOnDismissListener.onDismiss(dialog);
+    }
+    super.onDismiss(dialog);
+  }
+
+  @Override
+  public void onCancel(DialogInterface dialog) {
+    if (mOnCancelListener != null) {
+      mOnCancelListener.onCancel(dialog);
+    }
+    super.onCancel(dialog);
+  }
 
   abstract static class Lce<T> {
 
