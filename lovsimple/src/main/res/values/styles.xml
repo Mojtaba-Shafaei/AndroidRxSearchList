@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-  <style name="lov_simple_AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+  <style name="lov_simple_AppTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
     <item name="android:windowBackground">@color/lov_simple_blue_grey50</item>
     <item name="android:windowAnimationStyle">@style/lov_simple_ActivityAnimation</item>
 

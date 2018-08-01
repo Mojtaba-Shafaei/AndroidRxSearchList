@@ -12,16 +12,19 @@ import android.content.DialogInterface.OnCancelListener;
 import android.content.DialogInterface.OnDismissListener;
 import android.graphics.Typeface;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.app.DialogFragment;
-import android.support.v4.app.Fragment;
-import android.support.v4.view.ViewCompat;
-import android.support.v4.widget.ContentLoadingProgressBar;
-import android.support.v7.app.AppCompatDialogFragment;
-import android.support.v7.widget.AppCompatEditText;
-import android.support.v7.widget.AppCompatImageButton;
-import android.support.v7.widget.LinearLayoutManager;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.widget.AppCompatTextView;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.Fragment;
+import androidx.core.view.ViewCompat;
+import androidx.core.widget.ContentLoadingProgressBar;
+import androidx.appcompat.app.AppCompatDialogFragment;
+import androidx.appcompat.widget.AppCompatEditText;
+import androidx.appcompat.widget.AppCompatImageButton;
+import androidx.fragment.app.FragmentManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -78,7 +81,7 @@ public class LovSimple extends AppCompatDialogFragment {
   private AppCompatImageButton btnClearText;
   private CustomRecyclerView recyclerView;
   private ContentLoadingProgressBar progressBar;
-  private TextView tvMessage;
+  private AppCompatTextView tvMessage;
   private ViewGroup root;
   private AppCompatImageButton btnBack;
   //</editor-fold>
@@ -94,7 +97,7 @@ public class LovSimple extends AppCompatDialogFragment {
 
   /////////////////////////////////////
 //
-  public static LovSimple start(android.support.v4.app.FragmentManager fragmentManager,
+  public static LovSimple start(FragmentManager fragmentManager,
       String searchViewHint,
       FetchDataListener loader) {
 
@@ -147,6 +150,11 @@ public class LovSimple extends AppCompatDialogFragment {
     tvMessage.setText(getString(R.string.lov_simple_no_data1p));
     recyclerView.setEmptyView(tvMessage);
     recyclerView.setAdapter(adapter);
+
+    btnBack.setImageDrawable(
+        ContextCompat.getDrawable(getContext(), R.drawable.lov_simple_ic_arrow_back_grey_600_24dp));
+    btnClearText.setImageDrawable(
+        ContextCompat.getDrawable(getContext(), R.drawable.lov_simple_ic_close_grey_600_24dp));
 
     btnBack.setOnClickListener(new OnClickListener() {
       @Override
@@ -403,16 +411,6 @@ public class LovSimple extends AppCompatDialogFragment {
     return this;
   }
 
-  @Override
-  public void onResume() {
-    super.onResume();
-/*    try {
-      getDialog().getWindow()
-          .setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-    } catch (Exception e) {
-      e.printStackTrace();
-    }*/
-  }
 
   @Override
   public void onPause() {

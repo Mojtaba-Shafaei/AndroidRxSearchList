@@ -2,9 +2,6 @@ package com.mojtaba_shafaei.android.lovSimpleSample;
 
 import com.mojtaba_shafaei.android.LovSimple;
 
-import org.parceler.Parcel;
-
-@Parcel
 public class Job implements LovSimple.Item {
     String code;
     String des;

@@ -1,9 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.mojtaba_shafaei.android">
+  package="com.mojtaba_shafaei.android">
 
-    <application>
-        <activity
-            android:name=".LovSimple"
-            android:theme="@style/lov_simple_AppTheme" />
-    </application>
+  <application>
+
+  </application>
 </manifest>
