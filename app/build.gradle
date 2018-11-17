@@ -24,11 +24,11 @@ android {
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation "androidx.appcompat:appcompat:$rootProject.ext.supportVersion"
-    implementation 'androidx.multidex:multidex:2.0.0'
-    implementation project(':lovsimple')
-    implementation "com.google.android.material:material:$rootProject.ext.supportVersion"
+    implementation "com.android.support:appcompat-v7:$rootProject.ext.supportLibraryVersion"
+    implementation 'com.android.support:multidex:1.0.3'
 
-    implementation 'io.reactivex.rxjava2:rxandroid:2.0.2'
-    implementation 'com.jakewharton.rxrelay2:rxrelay:2.0.0'
+    implementation project(':lovsimple')
+
+    implementation 'io.reactivex.rxjava2:rxandroid:2.1.0'
+    implementation 'com.jakewharton.rxrelay2:rxrelay:2.1.0'
 }

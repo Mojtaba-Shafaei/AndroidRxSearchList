@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:app="http://schemas.android.com/apk/res-auto"
   xmlns:tools="http://schemas.android.com/tools"
   android:id="@+id/lov_simple_root"
@@ -7,7 +7,7 @@
   android:layout_height="match_parent"
   android:background="@color/lov_simple_blue_grey50">
 
-  <com.google.android.material.card.MaterialCardView
+  <android.support.design.card.MaterialCardView
     android:id="@+id/lov_simple_card_appBar"
     style="@style/Widget.MaterialComponents.CardView"
     android:layout_width="match_parent"
@@ -29,11 +29,11 @@
       android:layout_height="match_parent"
       android:orientation="vertical">
 
-      <androidx.constraintlayout.widget.ConstraintLayout
+      <android.support.constraint.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <androidx.appcompat.widget.AppCompatImageButton
+        <android.support.v7.widget.AppCompatImageButton
           android:id="@+id/lov_simple_btn_back"
           android:layout_width="@dimen/lov_simple_config_button_height"
           android:layout_height="@dimen/lov_simple_config_button_height"
@@ -47,7 +47,7 @@
           tools:src="@drawable/lov_simple_ic_arrow_back_grey_600_24dp"
           tools:translationX="0dp"/>
 
-        <androidx.appcompat.widget.AppCompatEditText
+        <android.support.v7.widget.AppCompatEditText
           android:id="@+id/lov_simple_search_view"
           android:layout_width="0dp"
           android:layout_height="@dimen/lov_simple_height_editText"
@@ -67,7 +67,7 @@
           app:layout_constraintRight_toLeftOf="@id/lov_simple_btn_back"
           app:layout_constraintTop_toTopOf="parent"/>
 
-        <androidx.appcompat.widget.AppCompatImageButton
+        <android.support.v7.widget.AppCompatImageButton
           android:id="@+id/lov_simple_btn_clear_search"
           android:layout_width="@dimen/lov_simple_config_button_height"
           android:layout_height="@dimen/lov_simple_config_button_height"
@@ -79,9 +79,9 @@
           app:layout_constraintLeft_toLeftOf="parent"
           app:layout_constraintTop_toTopOf="parent"
           tools:src="@drawable/lov_simple_ic_close_grey_600_24dp"/>
-      </androidx.constraintlayout.widget.ConstraintLayout>
+      </android.support.constraint.ConstraintLayout>
 
-      <androidx.core.widget.ContentLoadingProgressBar
+      <android.support.v4.widget.ContentLoadingProgressBar
         android:id="@+id/lov_simple_progressBar"
         style="@style/Widget.AppCompat.ProgressBar.Horizontal"
         android:layout_width="match_parent"
@@ -90,7 +90,7 @@
         android:layout_marginBottom="-10dp"
         android:indeterminate="true"/>
     </LinearLayout>
-  </com.google.android.material.card.MaterialCardView>
+  </android.support.design.card.MaterialCardView>
 
   <FrameLayout
     android:layout_width="0dp"
@@ -103,13 +103,13 @@
     app:layout_constraintRight_toRightOf="parent"
     app:layout_constraintTop_toBottomOf="@id/lov_simple_card_appBar">
 
-    <com.mojtaba_shafaei.android.CustomRecyclerView
+    <android.support.v7.widget.RecyclerView
       android:id="@+id/lov_simple_list"
       android:layout_width="match_parent"
       android:layout_height="match_parent"
       tools:listitems="@@layout/lov_simple_li_simple1"/>
 
-    <androidx.appcompat.widget.AppCompatTextView
+    <android.support.v7.widget.AppCompatTextView
       android:id="@+id/lov_simple_tv_message"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
@@ -118,7 +118,8 @@
       android:gravity="center"
       android:textColor="@color/lov_simple_text_colors_dark"
       android:textSize="14sp"
-      android:visibility="gone"/>
+      android:visibility="gone"
+      tools:text="@tools:sample/lorem"/>
   </FrameLayout>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+</android.support.constraint.ConstraintLayout>

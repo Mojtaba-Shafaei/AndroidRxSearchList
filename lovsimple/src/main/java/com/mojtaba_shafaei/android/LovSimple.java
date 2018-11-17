@@ -12,20 +12,20 @@ import android.content.DialogInterface.OnCancelListener;
 import android.content.DialogInterface.OnDismissListener;
 import android.graphics.Typeface;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.widget.AppCompatTextView;
-import androidx.core.content.ContextCompat;
-import androidx.fragment.app.DialogFragment;
-import androidx.fragment.app.Fragment;
-import androidx.core.view.ViewCompat;
-import androidx.core.widget.ContentLoadingProgressBar;
-import androidx.appcompat.app.AppCompatDialogFragment;
-import androidx.appcompat.widget.AppCompatEditText;
-import androidx.appcompat.widget.AppCompatImageButton;
-import androidx.fragment.app.FragmentManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import android.text.TextUtils;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.annotation.UiThread;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.view.ViewCompat;
+import android.support.v4.widget.ContentLoadingProgressBar;
+import android.support.v7.app.AppCompatDialogFragment;
+import android.support.v7.widget.AppCompatEditText;
+import android.support.v7.widget.AppCompatImageButton;
+import android.support.v7.widget.AppCompatTextView;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -37,506 +37,430 @@ import android.view.WindowManager;
 import android.view.animation.DecelerateInterpolator;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.TextView;
-import io.reactivex.BackpressureStrategy;
+import com.jakewharton.rxbinding2.widget.RxTextView;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.observers.DisposableObserver;
 import io.reactivex.schedulers.Schedulers;
-import io.reactivex.subscribers.DisposableSubscriber;
+import io.reactivex.subjects.ReplaySubject;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import org.apache.commons.collections4.CollectionUtils;
 
-public class LovSimple extends AppCompatDialogFragment {
+public class LovSimple extends AppCompatDialogFragment{
 
-  private static final String TAG = LovSimple.class.getSimpleName();
-  private String searchViewHint;
+private final String TAG = "LovSimple";
 
-  public interface Item {
+public LovSimple setItemsObservable(Observable<List<Item>> itemsObservable){
+  itemsObservable.subscribe(mItemsSubject);
+  return this;
+}
 
-    String getCode();
+public interface Item{
 
-    String getDes();
+  String getCode();
 
-    int getPriority();
+  String getDes();
 
-    void setCode(String code);
+  int getPriority();
 
-    void setDes(String des);
+  void setPriority(int priority);
 
-    void setPriority(int priority);
-  }
+}
 
-  public interface FetchDataListener {
+static Typeface TYPEFACE_IRANSANS_BOLD, TYPEFACE_IRANSANS_NORMAL;
+//<editor-fold desc="ButterKnife">
+private AppCompatEditText searchView;
+private AppCompatImageButton btnClearText;
+private RecyclerView recyclerView;
+private ContentLoadingProgressBar progressBar;
+private AppCompatTextView tvMessage;
+private AppCompatImageButton btnBack;
+//</editor-fold>
 
-    Observable<List<Item>> fetch(String query);
-  }
+private LovSimpleAdapter adapter;
+private final CompositeDisposable mDisposable = new CompositeDisposable();
+private LinearLayoutManager mLinearLayoutManager;
+/////////////////////////////////////
+private CharSequence searchViewHint;
+private CharSequence mSearchText;
+private OnResultListener mOnResultListener;
+private Dialog.OnCancelListener mOnCancelListener;
+private Dialog.OnDismissListener mOnDismissListener;
 
-  static Typeface TYPEFACE_IRANSANS_BOLD, TYPEFACE_IRANSANS_NORMAL;
-  //<editor-fold desc="ButterKnife">
-  private AppCompatEditText searchView;
-  private AppCompatImageButton btnClearText;
-  private CustomRecyclerView recyclerView;
-  private ContentLoadingProgressBar progressBar;
-  private AppCompatTextView tvMessage;
-  private ViewGroup root;
-  private AppCompatImageButton btnBack;
-  //</editor-fold>
+private final ReplaySubject<List<Item>> mItemsSubject = ReplaySubject.create();
 
-  private LovSimpleAdapter adapter;
-  private final CompositeDisposable disposable = new CompositeDisposable();
-
-  /////////////////////////////////////
-  private FetchDataListener sLoader;
-  private OnResultListener mOnResultListener;
-  private Dialog.OnCancelListener mOnCancelListener;
-  private Dialog.OnDismissListener mOnDismissListener;
-
-  /////////////////////////////////////
+/////////////////////////////////////
 //
-  public static LovSimple start(FragmentManager fragmentManager,
-      String searchViewHint,
-      FetchDataListener loader) {
+public static LovSimple create(CharSequence searchViewHint, CharSequence searchText){
+  LovSimple lovSimple = new LovSimple();
+  lovSimple.searchViewHint = searchViewHint;
+  lovSimple.mSearchText = searchText;
+  return lovSimple;
+}
 
-    LovSimple lovSimple = new LovSimple();
-    lovSimple.sLoader = loader;
-    lovSimple.searchViewHint = searchViewHint;
-    lovSimple.show(fragmentManager, "");
+@Override
+public int show(FragmentTransaction transaction, String tag){
+  return super.show(transaction, tag);
+}
 
-    return lovSimple;
+@Override
+public void onCreate(@Nullable Bundle savedInstanceState){
+  super.onCreate(savedInstanceState);
+  setStyle(DialogFragment.STYLE_NO_TITLE, R.style.ThemeOverlay_AppCompat_Light);
+}
+
+@Nullable
+@Override
+public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup __,
+    @Nullable Bundle savedInstanceState){
+
+  View view = inflater.inflate(R.layout.lov_simple_activity_all_lov, null);
+  TYPEFACE_IRANSANS_BOLD = Typeface.createFromAsset(getResources().getAssets(), "IRANSansMobile_Bold.ttf");
+  TYPEFACE_IRANSANS_NORMAL = Typeface.createFromAsset(getResources().getAssets(), "IRANSansMobile.ttf");
+
+  initUi(view);
+
+  searchView.setHint(StringUtils.defaultIfBlank(searchViewHint));
+//  searchView.setText(StringUtils.defaultIfBlank(mSearchText));
+
+  mLinearLayoutManager = new LinearLayoutManager(inflater.getContext());
+  recyclerView.setLayoutManager(mLinearLayoutManager);
+  recyclerView.setHasFixedSize(true);
+  adapter = new LovSimpleAdapter(recyclerView,
+                                 (position, data) -> {
+                                   try{
+                                     onResult(data);
+                                     dismissAllowingStateLoss();
+                                   } catch(Exception e){
+                                     Log.e(TAG, "onListItemClicked", e);
+                                   }
+
+                                 }, LayoutInflater.from(inflater.getContext()));
+
+  adapter.setHasStableIds(true);
+
+  tvMessage.setTypeface(TYPEFACE_IRANSANS_NORMAL);
+  tvMessage.setText(getString(R.string.lov_simple_no_data1p));
+  recyclerView.setAdapter(adapter);
+
+  btnBack.setOnClickListener(new OnClickListener(){
+    @Override
+    public void onClick(View v){
+      onCancel(LovSimple.this.getDialog());
+      hideSoftKeyboard(searchView);
+
+      btnBack.getViewTreeObserver()
+          .addOnGlobalLayoutListener(new OnGlobalLayoutListener(){
+            @Override
+            public void onGlobalLayout(){
+              if(btnBack.getViewTreeObserver().isAlive()){
+                btnBack.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                float value =
+                    ((View) btnBack.getParent()).getRight() - btnBack.getRight() + btnBack
+                        .getWidth();
+                ObjectAnimator animator = ObjectAnimator.ofFloat(btnBack, "translationX", value);
+                animator.setInterpolator(new DecelerateInterpolator(.8F));
+                animator.setDuration(300);
+                animator.addListener(new AnimatorListenerAdapter(){
+                  @Override
+                  public void onAnimationEnd(Animator animation){
+                    super.onAnimationEnd(animation);
+                    dismissAllowingStateLoss();
+                  }
+                });
+                animator.start();
+              }
+            }
+          });
+    }
+  });
+
+  btnClearText.setOnClickListener(v -> searchView.setText(""));
+
+  return view;
+}
+
+@Override
+public void onActivityCreated(@Nullable Bundle savedInstanceState){
+  super.onActivityCreated(savedInstanceState);
+  btnBack.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.lov_simple_ic_arrow_back_grey_600_24dp));
+  btnClearText.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.lov_simple_ic_close_grey_600_24dp));
+}
+
+private void onResult(Item data){
+  if(mOnResultListener != null){
+    mOnResultListener.onResult(data);
   }
+}
 
-  @Override
-  public void onCreate(@Nullable Bundle savedInstanceState) {
-    super.onCreate(savedInstanceState);
-    setStyle(DialogFragment.STYLE_NO_TITLE,
-        R.style.ThemeOverlay_AppCompat_Light);
+private void hideSoftKeyboard(AppCompatEditText searchView){
+  if(searchView != null){
+    InputMethodManager inputManager = (InputMethodManager)
+        searchView.getContext().getSystemService(INPUT_METHOD_SERVICE);
+    inputManager.hideSoftInputFromInputMethod(searchView.getWindowToken(), 0);
+    inputManager.hideSoftInputFromWindow(searchView.getApplicationWindowToken(), 0);
+
+    getDialog().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
+
+    searchView.clearFocus();
+    searchView.setSelected(false);
   }
+}
 
-  @Nullable
-  @Override
-  public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup __,
-      @Nullable Bundle savedInstanceState) {
+@Override
+public void onStart(){
+  super.onStart();
+  tvMessage.setVisibility(View.GONE);
+  try{
+    mDisposable.add(
+        RxTextView.afterTextChangeEvents(searchView)
+            .observeOn(AndroidSchedulers.mainThread())
+            .map(event -> {
+              btnClearText.setVisibility(StringUtils.isEmpty(event.editable()) ? View.GONE : View.VISIBLE);
+              return event;
+            })
+            .observeOn(Schedulers.computation())
+            .map(event -> StringUtils.defaultIfBlank(event.editable()))
+            .map(query -> StringUtils.replaceAll(query, "\\s(\\s)+", StringUtils.SPACE))//remove duplicate spaces
+            .map(String::trim)
+            .map(String::toUpperCase)
+            .throttleWithTimeout(600, TimeUnit.MILLISECONDS)
+            .distinctUntilChanged()
+            //.startWith(StringUtils.defaultIfBlank(mSearchText))
+            .withLatestFrom(mItemsSubject, InputDataKeeper::new)
+            .subscribeOn(Schedulers.io())
 
-    View view = inflater.inflate(R.layout.lov_simple_activity_all_lov, null);
-    TYPEFACE_IRANSANS_BOLD = Typeface
-        .createFromAsset(getResources().getAssets(), "IRANSansMobile_Bold.ttf");
-    TYPEFACE_IRANSANS_NORMAL = Typeface
-        .createFromAsset(getResources().getAssets(), "IRANSansMobile.ttf");
+            .flatMap(it -> {
+              //filter results base on query
+              if(it.query.length() > 1){
+                final String[] queries = StringUtils.split(it.query, StringUtils.SPACE);
 
-    initUi(view);
+                List<Item> results = new ArrayList<>();
+                int priority;
 
-    searchView.setHint(TextUtils.isEmpty(searchViewHint) ? "" : searchViewHint);
+                for(Item item : it.data){
+                  priority = 0;
 
-    recyclerView.setLayoutManager(
-        new LinearLayoutManager(inflater.getContext(), LinearLayoutManager.VERTICAL, false));
-    recyclerView.setHasFixedSize(true);
-    adapter = new LovSimpleAdapter((position, data) -> {
-      try {
-        onResult(data);
-        dismiss();
-      } catch (Exception e) {
-        Log.e(TAG, "onListItemClicked", e);
-      }
+                  if(StringUtils.startsWithIgnoreCase(item.getDes(), it.query)){
+                    priority++;
+                  }
 
-    }, LayoutInflater.from(inflater.getContext()));
+                  if(StringUtils.startsWithIgnoreCase(item.getDes(), it.query + ' ')){
+                    priority++;
+                  }
 
-    adapter.setHasStableIds(true);
+                  if(StringUtils.equalsIgnoreCase(item.getDes(), it.query)){
+                    priority++;
+                  }
 
-    tvMessage.setTypeface(TYPEFACE_IRANSANS_NORMAL);
-    tvMessage.setText(getString(R.string.lov_simple_no_data1p));
-    recyclerView.setEmptyView(tvMessage);
-    recyclerView.setAdapter(adapter);
+                  if(StringUtils.endsWithIgnoreCase(item.getDes(), it.query)){
+                    priority++;
+                  }
 
-    btnBack.setImageDrawable(
-        ContextCompat.getDrawable(getContext(), R.drawable.lov_simple_ic_arrow_back_grey_600_24dp));
-    btnClearText.setImageDrawable(
-        ContextCompat.getDrawable(getContext(), R.drawable.lov_simple_ic_close_grey_600_24dp));
+                  if(StringUtils.endsWithIgnoreCase(item.getDes(), ' ' + it.query)){
+                    priority++;
+                  }
 
-    btnBack.setOnClickListener(new OnClickListener() {
-      @Override
-      public void onClick(View v) {
-        onCancel(LovSimple.this.getDialog());
-        hideSoftKeyboard(searchView);
+                  if(StringUtils.containsIgnoreCase(item.getDes(), it.query)){
+                    priority++;
+                  }
 
-        btnBack.getViewTreeObserver()
-            .addOnGlobalLayoutListener(new OnGlobalLayoutListener() {
+                  for(String k : queries){
+                    priority += (StringUtils.countMatches(item.getDes().toUpperCase(), StringUtils.wrap(k, StringUtils.SPACE)));
+                  }
+
+                  for(String k : queries){
+                    priority += (StringUtils.countMatches(item.getDes().toUpperCase(), k));
+                  }
+
+                  item.setPriority(priority);
+                  //Add item if it is desired one.
+                  if(priority > 0){
+                    results.add(item);
+                  }
+                }
+                return Observable.just(Lce.data(new QueryDataKeeper(queries, results)));
+              } else{
+                return Observable.just(Lce.data(new QueryDataKeeper(null, it.data)));
+              }
+            })
+            .observeOn(AndroidSchedulers.mainThread())
+            .startWith(Lce.loading())
+            .subscribeWith(new DisposableObserver<Lce<QueryDataKeeper>>(){
               @Override
-              public void onGlobalLayout() {
-                if (btnBack.getViewTreeObserver().isAlive()) {
-                  btnBack.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-                  float value =
-                      ((View) btnBack.getParent()).getRight() - btnBack.getRight() + btnBack
-                          .getWidth();
-                  ObjectAnimator animator = ObjectAnimator.ofFloat(btnBack, "translationX", value);
-                  animator.setInterpolator(new DecelerateInterpolator(.8F));
-                  animator.setDuration(300);
-                  animator.addListener(new AnimatorListenerAdapter() {
-                    @Override
-                    public void onAnimationEnd(Animator animation) {
-                      super.onAnimationEnd(animation);
-                      dismiss();
+              public void onNext(Lce<QueryDataKeeper> lce){
+                if(isDisposed()){
+                  return;
+                }
+                try{
+                  if(lce.isLoading()){
+                    hideErrors();
+                    showContentLoading(true);
+
+                  } else if(lce.hasError()){
+                    showContentLoading(false);
+                    showInternetError();
+
+                  } else{
+                    hideErrors();
+                    showContentLoading(false);
+                    final QueryDataKeeper queryDataKeeper = lce.getData();
+                    if(queryDataKeeper != null){
+                      adapter.setHighlightFor(queryDataKeeper.queries);
+                      adapter.setData(queryDataKeeper.data);
+
+                      if(CollectionUtils.isEmpty(queryDataKeeper.data)){
+                        tvMessage.setText(getString(R.string.lov_simple_no_data1p));
+                        tvMessage.setVisibility(VISIBLE);
+                      } else{
+                        tvMessage.setVisibility(View.GONE);
+                      }
+                    } else{
+                      showInternetError();
                     }
-                  });
-                  animator.start();
+                  }
+                } catch(Exception e){
+                  Log.e(TAG, "onNext: ", e);
                 }
               }
-            });
-      }
-    });
 
-    btnClearText.setOnClickListener(v -> searchView.setText(""));
-
-    return view;
-  }
-
-  private void onResult(Item data) {
-    if (mOnResultListener != null) {
-      mOnResultListener.onResult(data);
-    }
-  }
-
-  private void hideSoftKeyboard(AppCompatEditText searchView) {
-    if (searchView != null) {
-      InputMethodManager inputManager = (InputMethodManager)
-          searchView.getContext().getSystemService(INPUT_METHOD_SERVICE);
-      inputManager.hideSoftInputFromInputMethod(searchView.getWindowToken(), 0);
-      inputManager.hideSoftInputFromWindow(searchView.getApplicationWindowToken(), 0);
-
-      getDialog().getWindow().setSoftInputMode(
-          WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
-
-      searchView.clearFocus();
-      searchView.setSelected(false);
-    }
-  }
-
-  @Override
-  public void onStart() {
-    super.onStart();
-    tvMessage.setVisibility(View.GONE);
-    try {
-      disposable.add(
-          RxSearch.fromEdiText(searchView)
-              .subscribeOn(Schedulers.io())
-              .observeOn(AndroidSchedulers.mainThread())
-              .startWith(searchView.getText().toString())
-              .map(query -> {
-                if (query.isEmpty()) {
-                  btnClearText.setVisibility(View.GONE);
-                } else {
-                  btnClearText.setVisibility(View.VISIBLE);
+              @Override
+              public void onError(Throwable e){
+                Log.e(TAG, "onError() called with: e = [" + e + "],isDisposed() = [" + isDisposed() + "]");
+                if(isDisposed()){
+                  return;
                 }
-                return query;
-              })
-              .observeOn(Schedulers.io())
-              .debounce(getResources().getInteger(R.integer.lov_simple_config_debounce_duration),
-                  TimeUnit.MILLISECONDS)
-              .throttleWithTimeout(
-                  getResources().getInteger(R.integer.lov_simple_config_throttle_duration),
-                  TimeUnit.MILLISECONDS)
-              .distinctUntilChanged()
-              .switchMap(query -> sLoader.fetch(query))
-              .observeOn(Schedulers.computation())
-              .switchMap(data -> {
-                final String query = getQueryText();
-                //filter results base on query
-                if (query.length() > 1) {
-                  String[] queries = query.split(" ");
-                  //remove space and 1 char length parts
-                  List<String> ss = new ArrayList<>(Arrays.asList(queries));
-                  for (Iterator<String> iterator = ss.iterator(); iterator.hasNext(); ) {
-                    if (iterator.next().length() <= 1) {
-                      iterator.remove();
-                    }
-                  }
-                  queries = new String[ss.size()];
-                  ss.toArray(queries);
-                  //
-                  List<Item> results = new ArrayList<>();
-                  int priority;
-                  for (Item j : data) {
-                    priority = Integer.MAX_VALUE;
-                    for (String k : queries) {
-                      k = k.toUpperCase();
-                      if (j.getDes().toUpperCase().contains(k)) {
-                        priority--;
-                      }
-                    }
+                showContentLoading(false);
+                showInternetError();
+              }
 
-                    if (j.getDes().contentEquals(query.toUpperCase())) {
-                      priority--;
-                    }
-
-                    if (j.getDes().toUpperCase().startsWith(query.toUpperCase())) {
-                      priority--;
-                    }
-
-                    j.setPriority(priority);
-                    //Add item if it is desired one.
-                    if (priority != Integer.MAX_VALUE) {
-                      results.add(j);
-                    }
-                  }
-                  return Observable.just(Lce.data(results));
-                } else {
-                  return Observable.just(Lce.data(data));
-                }
-              })
-              .startWith(Lce.loading())
-              .toFlowable(BackpressureStrategy.BUFFER)
-              .observeOn(AndroidSchedulers.mainThread())
-              .subscribeWith(new DisposableSubscriber<Lce<List<Item>>>() {
-                @Override
-                public void onNext(Lce<List<Item>> lce) {
-                  if (isDisposed()) {
-                    return;
-                  }
-                  try {
-                    if (lce.isLoading()) {
-                      hideErrors();
-                      showContentLoading(true);
-
-                    } else if (lce.hasError()) {
-                      showContentLoading(false);
-                      showInternetError();
-
-                    } else {
-                      hideErrors();
-                      showContentLoading(false);
-                      if (lce.getData() != null) {
-                        String[] splitDesiredHighlight =
-                            searchView.getText().toString().trim().split(" ");
-
-                        adapter.setHighlightFor(splitDesiredHighlight);
-                        adapter.setData(lce.getData());
-                        recyclerView.getLayoutManager().scrollToPosition(0);
-
-                        recyclerView.observeAdapter();
-                      } else {
-                        showInternetError();
-                      }
-                    }
-                  } catch (Exception e) {
-                    Log.e(TAG, "onNext: ", e);
-                  }
-                }
-
-                @Override
-                public void onError(Throwable e) {
-                  Log.d(TAG,
-                      "onError() called with: e = [" + e + "],isDisposed() = [" + isDisposed()
-                          + "]");
-                  if (isDisposed()) {
-                    return;
-                  }
-                  showContentLoading(false);
-                  showInternetError();
-                }
-
-                @Override
-                public void onComplete() {
-                  Log.d(TAG, "onComplete() called, isDisposed = [" + isDisposed() + "]");
-                }
-              })
-      );
-    } catch (Exception e) {
-      Log.e(TAG, "onCreate:RxSearch ", e);
-    }
+              @Override
+              public void onComplete(){
+              }
+            })
+    );
+  } catch(Exception e){
+    Log.e(TAG, "onCreate:RxSearch ", e);
   }
+}
 
-  private void showContentLoading(boolean b) {
-    progressBar.setVisibility(b ? VISIBLE : View.GONE);
-  }
+private void showContentLoading(boolean b){
+  progressBar.setVisibility(b ? VISIBLE : View.GONE);
+}
 
-  @NonNull
-  private String getQueryText() {
-    return searchView.getText().toString().toLowerCase().trim();
-  }
+private void initUi(View root){
+  searchView = root.findViewById(R.id.lov_simple_search_view);
+  btnClearText = root.findViewById(R.id.lov_simple_btn_clear_search);
+  recyclerView = root.findViewById(R.id.lov_simple_list);
+  progressBar = root.findViewById(R.id.lov_simple_progressBar);
+  tvMessage = root.findViewById(R.id.lov_simple_tv_message);
+  root = root.findViewById(R.id.lov_simple_root);
+  btnBack = root.findViewById(R.id.lov_simple_btn_back);
 
-  private void initUi(View root) {
-    searchView = root.findViewById(R.id.lov_simple_search_view);
-    btnClearText = root.findViewById(R.id.lov_simple_btn_clear_search);
-    recyclerView = root.findViewById(R.id.lov_simple_list);
-    progressBar = root.findViewById(R.id.lov_simple_progressBar);
-    tvMessage = root.findViewById(R.id.lov_simple_tv_message);
-    root = root.findViewById(R.id.lov_simple_root);
-    btnBack = root.findViewById(R.id.lov_simple_btn_back);
+  ViewCompat.setLayoutDirection(root, ViewCompat.LAYOUT_DIRECTION_RTL);
 
-    ViewCompat.setLayoutDirection(root, ViewCompat.LAYOUT_DIRECTION_RTL);
+  progressBar.setVisibility(View.GONE);
+  searchView.setImeOptions(EditorInfo.IME_ACTION_SEARCH | EditorInfo.IME_FLAG_NO_EXTRACT_UI);
 
-    progressBar.setVisibility(View.GONE);
-    searchView.setImeOptions(EditorInfo.IME_ACTION_SEARCH | EditorInfo.IME_FLAG_NO_EXTRACT_UI);
-
-    btnBack.getViewTreeObserver()
-        .addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-          @Override
-          public void onGlobalLayout() {
-            if (btnBack.getViewTreeObserver().isAlive()) {
-              btnBack.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-              ObjectAnimator animator = ObjectAnimator.ofFloat(btnBack, "translationX", 0);
-              animator.setInterpolator(new DecelerateInterpolator(1.5F));
-              animator.setStartDelay(500);
-              animator.setDuration(300);
-              animator.start();
-            }
+  btnBack.getViewTreeObserver()
+      .addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener(){
+        @Override
+        public void onGlobalLayout(){
+          if(btnBack.getViewTreeObserver().isAlive()){
+            btnBack.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+            ObjectAnimator animator = ObjectAnimator.ofFloat(btnBack, "translationX", 0);
+            animator.setInterpolator(new DecelerateInterpolator(1.5F));
+            animator.setStartDelay(500);
+            animator.setDuration(300);
+            animator.start();
           }
-        });
-  }
-
-  private void hideErrors() {
-    tvMessage.setVisibility(View.GONE);
-  }
-
-  private void showInternetError() {
-    tvMessage.setVisibility(VISIBLE);
-    tvMessage.setText(getString(R.string.lov_simple_no_internet_connection));
-  }
-
-  public LovSimple setOnResultListener(OnResultListener mOnResultListener) {
-    this.mOnResultListener = mOnResultListener;
-    return this;
-  }
-
-  public LovSimple setOnCancelListener(OnCancelListener mOnCancelListener) {
-    this.mOnCancelListener = mOnCancelListener;
-    return this;
-  }
-
-  public LovSimple setOnDismissListener(OnDismissListener mOnDismissListener) {
-    this.mOnDismissListener = mOnDismissListener;
-    return this;
-  }
-
-
-  @Override
-  public void onPause() {
-    hideSoftKeyboard(searchView);
-    disposable.clear();
-
-    super.onPause();
-    dismiss();
-  }
-
-  @Override
-  public void onDestroy() {
-    sLoader = null;
-    mOnResultListener = null;
-
-    super.onDestroy();
-  }
-
-  @Override
-  public void onDismiss(DialogInterface dialog) {
-    if (mOnDismissListener != null) {
-      mOnDismissListener.onDismiss(dialog);
-    }
-    super.onDismiss(dialog);
-  }
-
-  @Override
-  public void onCancel(DialogInterface dialog) {
-    if (mOnCancelListener != null) {
-      mOnCancelListener.onCancel(dialog);
-    }
-    super.onCancel(dialog);
-  }
-
-  abstract static class Lce<T> {
-
-    static <T> Lce<T> data(final T data) {
-      return new Lce<T>() {
-        @Override
-        public boolean isLoading() {
-          return false;
         }
+      });
+}
 
-        @Override
-        public boolean hasError() {
-          return false;
-        }
+@UiThread
+private void hideErrors(){
+  tvMessage.setVisibility(View.GONE);
+}
 
-        @Override
-        public Throwable getError() {
-          return null;
-        }
+@UiThread
+private void showInternetError(){
+  tvMessage.setVisibility(VISIBLE);
+  tvMessage.setText(getString(R.string.lov_simple_no_internet_connection));
+}
 
-        @Override
-        public T getData() {
-          return data;
-        }
-      };
-    }
+public LovSimple setOnResultListener(OnResultListener mOnResultListener){
+  this.mOnResultListener = mOnResultListener;
+  return this;
+}
 
-    static <T> Lce<T> error(final Throwable error) {
-      return new Lce<T>() {
-        @Override
-        public boolean isLoading() {
-          return false;
-        }
+public LovSimple setOnCancelListener(OnCancelListener mOnCancelListener){
+  this.mOnCancelListener = mOnCancelListener;
+  return this;
+}
 
-        @Override
-        public boolean hasError() {
-          return true;
-        }
+public LovSimple setOnDismissListener(OnDismissListener mOnDismissListener){
+  this.mOnDismissListener = mOnDismissListener;
+  return this;
+}
 
-        @Override
-        public Throwable getError() {
-          return error;
-        }
+@Override
+public void onPause(){
+  hideSoftKeyboard(searchView);
+  super.onPause();
+  dismissAllowingStateLoss();
+}
 
-        @Override
-        public T getData() {
-          return null;
-        }
-      };
-    }
+@Override
+public void onDestroyView(){
+  mOnResultListener = null;
+  recyclerView.setAdapter(null);
+  super.onDestroyView();
+}
 
-    static <T> Lce<T> loading() {
-      return new Lce<T>() {
-        @Override
-        public boolean isLoading() {
-          return true;
-        }
-
-        @Override
-        public boolean hasError() {
-          return false;
-        }
-
-        @Override
-        public Throwable getError() {
-          return null;
-        }
-
-        @Override
-        public T getData() {
-          return null;
-        }
-      };
-    }
-
-    public abstract boolean isLoading();
-
-    public abstract boolean hasError();
-
-    public abstract Throwable getError();
-
-    public abstract T getData();
-
-    @Override
-    public String toString() {
-      return "Lce{isLoading = " + isLoading() +
-          ", hasError = " + (hasError() ? hasError() + "[" + getError() + "]" : hasError()) +
-          ", data = " + getData() + "}";
-    }
+@Override
+public void onDismiss(DialogInterface dialog){
+  if(mOnDismissListener != null){
+    mOnDismissListener.onDismiss(dialog);
   }
+  super.onDismiss(dialog);
+}
 
-  public interface OnResultListener {
-
-    void onResult(Item item);
+@Override
+public void onCancel(DialogInterface dialog){
+  if(mOnCancelListener != null){
+    mOnCancelListener.onCancel(dialog);
   }
+  super.onCancel(dialog);
+}
+
+public interface OnResultListener{
+
+  void onResult(Item item);
+}
+
+private class InputDataKeeper{
+
+  String query;
+  List<Item> data;
+
+  InputDataKeeper(String query, List<Item> data){
+    this.query = query;
+    this.data = data;
+  }
+}
+
+private class QueryDataKeeper{
+
+  String[] queries;
+  List<Item> data;
+
+  QueryDataKeeper(String[] queries, List<Item> data){
+    this.queries = queries;
+    this.data = data;
+  }
+}
 }

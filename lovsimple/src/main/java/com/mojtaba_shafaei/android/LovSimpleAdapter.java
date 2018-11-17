@@ -1,110 +1,158 @@
 package com.mojtaba_shafaei.android;
 
-import androidx.recyclerview.widget.SortedList;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.recyclerview.widget.SortedListAdapterCallback;
+import android.support.annotation.NonNull;
+import android.support.v7.widget.RecyclerView;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
+import android.widget.Toast;
+import com.mojtaba_shafaei.android.LovSimple.Item;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
+import java.text.Collator;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Locale;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.comparators.ComparatorChain;
+import org.apache.commons.lang3.ObjectUtils;
 
-class LovSimpleAdapter extends RecyclerView.Adapter<ListItemSingleRowHolder> {
+class LovSimpleAdapter extends RecyclerView.Adapter<ListItemSingleRowHolder> implements Disposable{
 
-    private SortedList<LovSimple.Item> data;
-    private LayoutInflater inflater;
-    private OnListItemClickListener<LovSimple.Item> itemClickListener;
+private final String TAG = "LovSimpleAdapter";
 
-    private String[] queries;
-    private String TAG = getClass().getSimpleName();
+private final List<Item> data = new LinkedList<>();
+private LayoutInflater inflater;
+private OnListItemClickListener<LovSimple.Item> itemClickListener;
 
-    private final java.text.Collator collator;
+private String[] queries;
 
+private final Collator mCollator;
+private final CompositeDisposable mDisposable = new CompositeDisposable();
 
-    public LovSimpleAdapter(OnListItemClickListener<LovSimple.Item> onListItemClickListener,
-                            LayoutInflater inflater) {
-        this.itemClickListener = onListItemClickListener;
-        this.inflater = inflater;
-        collator = java.text.Collator.getInstance(new Locale("fa"));
+private RecyclerView mRecyclerView;
 
-        data = new SortedList<>(LovSimple.Item.class, new SortedListAdapterCallback<LovSimple.Item>(this) {
-            @Override
-            public int compare(LovSimple.Item f1, LovSimple.Item f2) {
-                return collator
-                        .compare(f1.getPriority() + " " + f1.getDes(), f2.getPriority() + " " + f2.getDes());
-            }
+LovSimpleAdapter(RecyclerView recyclerView, OnListItemClickListener<LovSimple.Item> onListItemClickListener
+    , LayoutInflater inflater){
+  this.mRecyclerView = recyclerView;
+  this.itemClickListener = onListItemClickListener;
+  this.inflater = inflater;
+  mCollator = PersianCollator.getPersianInstance();
+  mCollator.setStrength(Collator.PRIMARY);
+}
 
-            @Override
-            public boolean areContentsTheSame(LovSimple.Item oldItem, LovSimple.Item newItem) {
-                return (oldItem.getCode().equals(newItem.getCode()));
-            }
+@NonNull
+@Override
+public ListItemSingleRowHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType){
+  return ListItemSingleRowHolder.New(inflater, parent);
+}
 
-            @Override
-            public boolean areItemsTheSame(LovSimple.Item oldItem, LovSimple.Item newItem) {
-                return (oldItem.getCode().equals(newItem.getCode()));
-            }
-        });
+@Override
+public void onBindViewHolder(@NonNull ListItemSingleRowHolder holder, int position){
+  try{
+    LovSimple.Item job = data.get(holder.getAdapterPosition());
+    holder.setTypeface(LovSimple.TYPEFACE_IRANSANS_NORMAL);
 
-    }
-
-    @Override
-    public ListItemSingleRowHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = inflater.inflate(R.layout.lov_simple_li_simple1, parent, false);
-        return new ListItemSingleRowHolder(view);
-    }
-
-    @Override
-    public void onBindViewHolder(ListItemSingleRowHolder holder, int position) {
-        try {
-            LovSimple.Item job = data.get(holder.getAdapterPosition());
-            holder.getText1().setTypeface(LovSimple.TYPEFACE_IRANSANS_NORMAL);
-
-            if (queries != null && queries.length > 0) {
-                SpannableStringBuilder ssb = new SpannableStringBuilder(job.getDes());
-                for (String k : queries) {
-                    if (k.length() > 1 && job.getDes().toUpperCase().contains(k.toUpperCase())) {
-                        int index = job.getDes().toUpperCase().indexOf(k.toUpperCase());
-                        ssb.setSpan(
-                                new CustomTypefaceSpan("", LovSimple.TYPEFACE_IRANSANS_BOLD),
-                                index,
-                                index + k.length(),
-                                Spannable.SPAN_INCLUSIVE_INCLUSIVE);
-                    }
-                }
-                holder.getText1().setText(ssb);
-                ssb.clear();
-
-            } else {
-                holder.getText1().setText(job.getDes());
-            }
-            holder.itemView.setOnClickListener((View v) -> itemClickListener
-                    .onListItemClicked(holder.getAdapterPosition(), job));
-        } catch (IndexOutOfBoundsException e) {
-            Log.e(TAG, "Exception handled", e);
+    if(queries != null && queries.length > 0){
+      SpannableStringBuilder ssb = new SpannableStringBuilder(job.getDes());
+      for(String k : queries){
+        final int index = StringUtils.indexOfIgnoreCase(job.getDes(), k);
+        if(index != -1){
+          ssb.setSpan(
+              new CustomTypefaceSpan("", LovSimple.TYPEFACE_IRANSANS_BOLD),
+              index, index + k.length(),
+              Spannable.SPAN_INCLUSIVE_INCLUSIVE);
         }
+      }
+      holder.setText(ssb);
+      ssb.clear();
+
+    } else{
+      holder.setText(job.getDes());
     }
 
-    @Override
-    public int getItemCount() {
-        return data.size();
-    }
+    holder.itemView.setOnClickListener((View v) -> itemClickListener
+        .onListItemClicked(holder.getAdapterPosition(), job));
+  } catch(IndexOutOfBoundsException e){
+    Log.e(TAG, "Exception handled", e);
+  }
+}
 
-    @Override
-    public long getItemId(int position) {
-        return data.get(position).hashCode();
-    }
+@Override
+public int getItemCount(){
+  return data.size();
+}
 
-    public void setHighlightFor(String[] queries) {
-        this.queries = queries;
-    }
+@Override
+public long getItemId(int position){
+  return data.get(position).hashCode();
+}
 
-    public void setData(List<LovSimple.Item> list) {
-        data.clear();
-        data.addAll(list);
-        notifyDataSetChanged();
-    }
+void setHighlightFor(String[] queries){
+  this.queries = queries;
+}
+
+void setData(List<Item> list){
+  if(CollectionUtils.isEmpty(list)){
+    data.clear();
+    notifyDataSetChanged();
+
+  } else{
+    mDisposable.add(DiffUtil.getDiff(data, list)
+                        .subscribeOn(Schedulers.computation())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(diffResultLce -> {
+                          if(isDisposed()){
+                            return;
+                          }
+                          data.clear();
+                          data.addAll(ObjectUtils.defaultIfNull(list, new ArrayList<>(0)));
+                          final ComparatorChain<Item> chain = new ComparatorChain<>();
+                          chain.addComparator((o1, o2) -> this.compare(o1.getPriority(), o2.getPriority()), true);
+                          chain.addComparator((o1, o2) -> mCollator.compare(o1.getDes(), o2.getDes()));
+                          Collections.sort(data, chain);
+
+                          if(diffResultLce.hasError()){
+                            Toast.makeText(inflater.getContext().getApplicationContext(), diffResultLce.getError().getMessage(), Toast.LENGTH_LONG)
+                                .show();
+                          } else{
+
+                            diffResultLce.getData().dispatchUpdatesTo(LovSimpleAdapter.this);
+                            mRecyclerView.scrollToPosition(0);
+                          }
+                        })
+    );
+  }
+
+}
+
+/**
+ * DON'T use Integer.compare, Its added in api 19
+ */
+int compare(int x, int y){
+  return (x < y) ? -1 : ((x == y) ? 0 : 1);
+}
+
+@Override
+public void onDetachedFromRecyclerView(@NonNull RecyclerView recyclerView){
+  dispose();
+  mRecyclerView = null;
+  super.onDetachedFromRecyclerView(recyclerView);
+}
+
+@Override
+public void dispose(){
+  mDisposable.clear();
+}
+
+@Override
+public boolean isDisposed(){
+  return mDisposable.isDisposed();
+}
 }
