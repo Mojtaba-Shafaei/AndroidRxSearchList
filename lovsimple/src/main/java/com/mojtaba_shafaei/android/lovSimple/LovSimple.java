@@ -109,7 +109,7 @@ public int show(FragmentTransaction transaction, String tag){
 @Override
 public void onCreate(@Nullable Bundle savedInstanceState){
   super.onCreate(savedInstanceState);
-  setStyle(DialogFragment.STYLE_NO_TITLE, com.mojtaba_shafaei.android.R.style.ThemeOverlay_AppCompat_Light);
+  setStyle(DialogFragment.STYLE_NO_TITLE, R.style.ThemeOverlay_AppCompat_Light);
 }
 
 @Nullable
@@ -117,7 +117,7 @@ public void onCreate(@Nullable Bundle savedInstanceState){
 public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup __,
     @Nullable Bundle savedInstanceState){
 
-  View view = inflater.inflate(com.mojtaba_shafaei.android.R.layout.lov_simple_activity_all_lov, null);
+  View view = inflater.inflate(R.layout.lov_simple_activity_all_lov, null);
   TYPEFACE_IRANSANS_BOLD = Typeface.createFromAsset(getResources().getAssets(), "IRANSansMobile_Bold.ttf");
   TYPEFACE_IRANSANS_NORMAL = Typeface.createFromAsset(getResources().getAssets(), "IRANSansMobile.ttf");
 
@@ -143,7 +143,7 @@ public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup _
   adapter.setHasStableIds(true);
 
   tvMessage.setTypeface(TYPEFACE_IRANSANS_NORMAL);
-  tvMessage.setText(getString(com.mojtaba_shafaei.android.R.string.lov_simple_no_data1p));
+  tvMessage.setText(getString(R.string.lov_simple_no_data1p));
   recyclerView.setAdapter(adapter);
 
   btnBack.setOnClickListener(new OnClickListener(){
@@ -186,8 +186,8 @@ public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup _
 @Override
 public void onActivityCreated(@Nullable Bundle savedInstanceState){
   super.onActivityCreated(savedInstanceState);
-  btnBack.setImageDrawable(ContextCompat.getDrawable(getContext(), com.mojtaba_shafaei.android.R.drawable.lov_simple_ic_arrow_back_grey_600_24dp));
-  btnClearText.setImageDrawable(ContextCompat.getDrawable(getContext(), com.mojtaba_shafaei.android.R.drawable.lov_simple_ic_close_grey_600_24dp));
+  btnBack.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.lov_simple_ic_arrow_back_grey_600_24dp));
+  btnClearText.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.lov_simple_ic_close_grey_600_24dp));
 }
 
 private void onResult(Item data){
@@ -320,7 +320,7 @@ public void onStart(){
                       adapter.setData(queryDataKeeper.data);
 
                       if(CollectionUtils.isEmpty(queryDataKeeper.data)){
-                        tvMessage.setText(getString(com.mojtaba_shafaei.android.R.string.lov_simple_no_data1p));
+                        tvMessage.setText(getString(R.string.lov_simple_no_data1p));
                         tvMessage.setVisibility(VISIBLE);
                       } else{
                         tvMessage.setVisibility(View.GONE);
@@ -359,13 +359,13 @@ private void showContentLoading(boolean b){
 }
 
 private void initUi(View root){
-  searchView = root.findViewById(com.mojtaba_shafaei.android.R.id.lov_simple_search_view);
-  btnClearText = root.findViewById(com.mojtaba_shafaei.android.R.id.lov_simple_btn_clear_search);
-  recyclerView = root.findViewById(com.mojtaba_shafaei.android.R.id.lov_simple_list);
-  progressBar = root.findViewById(com.mojtaba_shafaei.android.R.id.lov_simple_progressBar);
-  tvMessage = root.findViewById(com.mojtaba_shafaei.android.R.id.lov_simple_tv_message);
-  root = root.findViewById(com.mojtaba_shafaei.android.R.id.lov_simple_root);
-  btnBack = root.findViewById(com.mojtaba_shafaei.android.R.id.lov_simple_btn_back);
+  searchView = root.findViewById(R.id.lov_simple_search_view);
+  btnClearText = root.findViewById(R.id.lov_simple_btn_clear_search);
+  recyclerView = root.findViewById(R.id.lov_simple_list);
+  progressBar = root.findViewById(R.id.lov_simple_progressBar);
+  tvMessage = root.findViewById(R.id.lov_simple_tv_message);
+  root = root.findViewById(R.id.lov_simple_root);
+  btnBack = root.findViewById(R.id.lov_simple_btn_back);
 
   ViewCompat.setLayoutDirection(root, ViewCompat.LAYOUT_DIRECTION_RTL);
 
@@ -396,7 +396,7 @@ private void hideErrors(){
 @UiThread
 private void showInternetError(){
   tvMessage.setVisibility(VISIBLE);
-  tvMessage.setText(getString(com.mojtaba_shafaei.android.R.string.lov_simple_no_internet_connection));
+  tvMessage.setText(getString(R.string.lov_simple_no_internet_connection));
 }
 
 public LovSimple setOnResultListener(OnResultListener mOnResultListener){
@@ -468,6 +468,89 @@ private class QueryDataKeeper{
   QueryDataKeeper(String[] queries, List<Item> data){
     this.queries = queries;
     this.data = data;
+  }
+}
+
+public abstract static class Lce<T>{
+
+  abstract boolean isLoading();
+
+  abstract boolean hasError();
+
+  abstract Throwable getError();
+
+  abstract T getData();
+
+  public static <T> Lce<T> data(final T data){
+    return new Lce<T>(){
+      @Override
+      public boolean isLoading(){
+        return false;
+      }
+
+      @Override
+      public boolean hasError(){
+        return false;
+      }
+
+      @Override
+      public Throwable getError(){
+        return null;
+      }
+
+      @Override
+      public T getData(){
+        return data;
+      }
+    };
+  }
+
+  public static <T> Lce<T> error(final Throwable error){
+    return new Lce<T>(){
+      @Override
+      public boolean isLoading(){
+        return false;
+      }
+
+      @Override
+      public boolean hasError(){
+        return true;
+      }
+
+      @Override
+      public Throwable getError(){
+        return error;
+      }
+
+      @Override
+      public T getData(){
+        return null;
+      }
+    };
+  }
+
+  public static <T> Lce<T> loading(){
+    return new Lce<T>(){
+      @Override
+      public boolean isLoading(){
+        return true;
+      }
+
+      @Override
+      public boolean hasError(){
+        return false;
+      }
+
+      @Override
+      public Throwable getError(){
+        return null;
+      }
+
+      @Override
+      public T getData(){
+        return null;
+      }
+    };
   }
 }
 }

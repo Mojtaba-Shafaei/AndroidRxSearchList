@@ -1,10 +1,9 @@
 package com.mojtaba_shafaei.android.lovSimpleSample;
 
-import com.mojtaba_shafaei.android.lovSimple.Lce;
+import com.mojtaba_shafaei.android.lovSimple.LovSimple.Lce;
 import com.mojtaba_shafaei.android.lovSimple.LovSimple;
 import com.mojtaba_shafaei.android.lovSimple.LovSimple.Item;
 import io.reactivex.Observable;
-import io.reactivex.schedulers.Schedulers;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;

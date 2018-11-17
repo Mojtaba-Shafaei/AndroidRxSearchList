@@ -12,7 +12,7 @@ import org.apache.commons.lang3.StringUtils;
 
 class DiffUtil{
 
-static Single<Lce<DiffResult>> getDiff(@Nullable List<Item> old, @Nullable List<Item> news){
+static Single<LovSimple.Lce<DiffResult>> getDiff(@Nullable List<Item> old, @Nullable List<Item> news){
   return Single.just(ObjectUtils.defaultIfNull(old, new ArrayList<Item>(0)))
       .map(oldItems -> {
         WeakReference<List<Item>> newItems = new WeakReference<>(ObjectUtils.defaultIfNull(news, new ArrayList<>(0)));
@@ -40,7 +40,7 @@ static Single<Lce<DiffResult>> getDiff(@Nullable List<Item> old, @Nullable List<
 
         }, true);
       })
-      .map(Lce::data)
-      .onErrorReturnItem(Lce.error(new Error("مجددا تلاش نمایید")));
+      .map(LovSimple.Lce::data)
+      .onErrorReturnItem(LovSimple.Lce.error(new Error("مجددا تلاش نمایید")));
 }
 }
