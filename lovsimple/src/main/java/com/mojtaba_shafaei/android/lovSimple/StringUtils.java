@@ -1,4 +1,4 @@
-package com.mojtaba_shafaei.android;
+package com.mojtaba_shafaei.android.lovSimple;
 
 class StringUtils extends org.apache.commons.lang3.StringUtils{
 

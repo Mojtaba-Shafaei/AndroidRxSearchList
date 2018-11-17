@@ -1,6 +1,6 @@
-package com.mojtaba_shafaei.android;
+package com.mojtaba_shafaei.android.lovSimple;
 
-abstract class Lce<T>{
+public abstract class Lce<T>{
 
 abstract boolean isLoading();
 
@@ -10,7 +10,7 @@ abstract Throwable getError();
 
 abstract T getData();
 
-static <T> Lce<T> data(final T data){
+public static <T> Lce<T> data(final T data){
   return new Lce<T>(){
     @Override
     public boolean isLoading(){
@@ -34,7 +34,7 @@ static <T> Lce<T> data(final T data){
   };
 }
 
-static <T> Lce<T> error(final Throwable error){
+public static <T> Lce<T> error(final Throwable error){
   return new Lce<T>(){
     @Override
     public boolean isLoading(){
@@ -58,7 +58,7 @@ static <T> Lce<T> error(final Throwable error){
   };
 }
 
-static <T> Lce<T> loading(){
+public static <T> Lce<T> loading(){
   return new Lce<T>(){
     @Override
     public boolean isLoading(){

@@ -1,15 +1,19 @@
 package com.mojtaba_shafaei.android.lovSimpleSample;
 
-import com.mojtaba_shafaei.android.LovSimple;
-import com.mojtaba_shafaei.android.LovSimple.Item;
+import com.mojtaba_shafaei.android.lovSimple.Lce;
+import com.mojtaba_shafaei.android.lovSimple.LovSimple;
+import com.mojtaba_shafaei.android.lovSimple.LovSimple.Item;
+import io.reactivex.Observable;
+import io.reactivex.schedulers.Schedulers;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 class DataMocker{
 
 private final String TAG = "DataMocker";
 
-static io.reactivex.Observable<List<Item>> getList(){
+static io.reactivex.Observable<Lce<List<Item>>> getList(){
   List<LovSimple.Item> items = new ArrayList<>();
   items.add(new Job("1", "شغل یک از یک", 1));
   items.add(new Job("2", "آزاد شغل ۲", 1));
@@ -34,8 +38,14 @@ static io.reactivex.Observable<List<Item>> getList(){
   items.add(new Job("21", "21th job with 1 code", 1));
   items.add(new Job("22", "22th job with 1 code", 1));
 
-//        List<LovSimple.Item> result =  new ArrayList<>();
+  return Observable.timer(10, TimeUnit.SECONDS)
+      //.mergeWith(Observable.interval(5, TimeUnit.SECONDS, Schedulers.computation()))
+      .map(t -> Lce.data(items));
 
-  return io.reactivex.Observable.just(items);
 }
+
+static io.reactivex.Observable<Lce<List<Item>>> getError(){
+  return io.reactivex.Observable.just(Lce.error(new Error("Error Happened")));
+}
+
 }

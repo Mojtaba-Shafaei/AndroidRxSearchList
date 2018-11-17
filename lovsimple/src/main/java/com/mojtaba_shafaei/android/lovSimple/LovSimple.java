@@ -1,4 +1,4 @@
-package com.mojtaba_shafaei.android;
+package com.mojtaba_shafaei.android.lovSimple;
 
 import static android.content.Context.INPUT_METHOD_SERVICE;
 import static android.view.View.VISIBLE;
@@ -53,7 +53,7 @@ public class LovSimple extends AppCompatDialogFragment{
 
 private final String TAG = "LovSimple";
 
-public LovSimple setItemsObservable(Observable<List<Item>> itemsObservable){
+public LovSimple setItemsObservable(Observable<Lce<List<Item>>> itemsObservable){
   itemsObservable.subscribe(mItemsSubject);
   return this;
 }
@@ -90,7 +90,7 @@ private OnResultListener mOnResultListener;
 private Dialog.OnCancelListener mOnCancelListener;
 private Dialog.OnDismissListener mOnDismissListener;
 
-private final ReplaySubject<List<Item>> mItemsSubject = ReplaySubject.create();
+private final ReplaySubject<Lce<List<Item>>> mItemsSubject = ReplaySubject.create();
 
 /////////////////////////////////////
 //
@@ -109,7 +109,7 @@ public int show(FragmentTransaction transaction, String tag){
 @Override
 public void onCreate(@Nullable Bundle savedInstanceState){
   super.onCreate(savedInstanceState);
-  setStyle(DialogFragment.STYLE_NO_TITLE, R.style.ThemeOverlay_AppCompat_Light);
+  setStyle(DialogFragment.STYLE_NO_TITLE, com.mojtaba_shafaei.android.R.style.ThemeOverlay_AppCompat_Light);
 }
 
 @Nullable
@@ -117,7 +117,7 @@ public void onCreate(@Nullable Bundle savedInstanceState){
 public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup __,
     @Nullable Bundle savedInstanceState){
 
-  View view = inflater.inflate(R.layout.lov_simple_activity_all_lov, null);
+  View view = inflater.inflate(com.mojtaba_shafaei.android.R.layout.lov_simple_activity_all_lov, null);
   TYPEFACE_IRANSANS_BOLD = Typeface.createFromAsset(getResources().getAssets(), "IRANSansMobile_Bold.ttf");
   TYPEFACE_IRANSANS_NORMAL = Typeface.createFromAsset(getResources().getAssets(), "IRANSansMobile.ttf");
 
@@ -143,7 +143,7 @@ public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup _
   adapter.setHasStableIds(true);
 
   tvMessage.setTypeface(TYPEFACE_IRANSANS_NORMAL);
-  tvMessage.setText(getString(R.string.lov_simple_no_data1p));
+  tvMessage.setText(getString(com.mojtaba_shafaei.android.R.string.lov_simple_no_data1p));
   recyclerView.setAdapter(adapter);
 
   btnBack.setOnClickListener(new OnClickListener(){
@@ -178,16 +178,16 @@ public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup _
     }
   });
 
+  searchView.setText(StringUtils.defaultIfBlank(mSearchText));
   btnClearText.setOnClickListener(v -> searchView.setText(""));
-
   return view;
 }
 
 @Override
 public void onActivityCreated(@Nullable Bundle savedInstanceState){
   super.onActivityCreated(savedInstanceState);
-  btnBack.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.lov_simple_ic_arrow_back_grey_600_24dp));
-  btnClearText.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.lov_simple_ic_close_grey_600_24dp));
+  btnBack.setImageDrawable(ContextCompat.getDrawable(getContext(), com.mojtaba_shafaei.android.R.drawable.lov_simple_ic_arrow_back_grey_600_24dp));
+  btnClearText.setImageDrawable(ContextCompat.getDrawable(getContext(), com.mojtaba_shafaei.android.R.drawable.lov_simple_ic_close_grey_600_24dp));
 }
 
 private void onResult(Item data){
@@ -216,24 +216,32 @@ public void onStart(){
   tvMessage.setVisibility(View.GONE);
   try{
     mDisposable.add(
-        RxTextView.afterTextChangeEvents(searchView)
-            .observeOn(AndroidSchedulers.mainThread())
-            .map(event -> {
-              btnClearText.setVisibility(StringUtils.isEmpty(event.editable()) ? View.GONE : View.VISIBLE);
-              return event;
-            })
-            .observeOn(Schedulers.computation())
-            .map(event -> StringUtils.defaultIfBlank(event.editable()))
-            .map(query -> StringUtils.replaceAll(query, "\\s(\\s)+", StringUtils.SPACE))//remove duplicate spaces
-            .map(String::trim)
-            .map(String::toUpperCase)
-            .throttleWithTimeout(600, TimeUnit.MILLISECONDS)
-            .distinctUntilChanged()
-            //.startWith(StringUtils.defaultIfBlank(mSearchText))
-            .withLatestFrom(mItemsSubject, InputDataKeeper::new)
-            .subscribeOn(Schedulers.io())
+        Observable.combineLatest(
+            RxTextView.afterTextChangeEvents(searchView)
+                .observeOn(AndroidSchedulers.mainThread())
+                .map(event -> {
+                  btnClearText.setVisibility(StringUtils.isEmpty(event.editable()) ? View.GONE : View.VISIBLE);
+                  return event;
+                })
+                .observeOn(Schedulers.computation())
+                .throttleWithTimeout(600, TimeUnit.MILLISECONDS)
+                .map(event -> StringUtils.defaultIfBlank(event.editable()))
+                .map(query -> StringUtils.replaceAll(query, "\\s(\\s)+", StringUtils.SPACE))//remove duplicate spaces
+                .map(String::trim)
+                .map(String::toUpperCase)
+            , mItemsSubject
+            , InputDataKeeper::new)
 
+            .distinctUntilChanged()
+            .startWith(new InputDataKeeper("", Lce.loading()))
+            .subscribeOn(Schedulers.io())
             .flatMap(it -> {
+              if(it.data.isLoading()){
+                return Observable.just(Lce.<QueryDataKeeper>loading());
+              } else if(it.data.hasError()){
+                return Observable.just(Lce.<QueryDataKeeper>error(it.data.getError()));
+              }
+
               //filter results base on query
               if(it.query.length() > 1){
                 final String[] queries = StringUtils.split(it.query, StringUtils.SPACE);
@@ -241,7 +249,7 @@ public void onStart(){
                 List<Item> results = new ArrayList<>();
                 int priority;
 
-                for(Item item : it.data){
+                for(Item item : it.data.getData()){
                   priority = 0;
 
                   if(StringUtils.startsWithIgnoreCase(item.getDes(), it.query)){
@@ -284,11 +292,10 @@ public void onStart(){
                 }
                 return Observable.just(Lce.data(new QueryDataKeeper(queries, results)));
               } else{
-                return Observable.just(Lce.data(new QueryDataKeeper(null, it.data)));
+                return Observable.just(Lce.data(new QueryDataKeeper(null, it.data.getData())));
               }
             })
             .observeOn(AndroidSchedulers.mainThread())
-            .startWith(Lce.loading())
             .subscribeWith(new DisposableObserver<Lce<QueryDataKeeper>>(){
               @Override
               public void onNext(Lce<QueryDataKeeper> lce){
@@ -313,7 +320,7 @@ public void onStart(){
                       adapter.setData(queryDataKeeper.data);
 
                       if(CollectionUtils.isEmpty(queryDataKeeper.data)){
-                        tvMessage.setText(getString(R.string.lov_simple_no_data1p));
+                        tvMessage.setText(getString(com.mojtaba_shafaei.android.R.string.lov_simple_no_data1p));
                         tvMessage.setVisibility(VISIBLE);
                       } else{
                         tvMessage.setVisibility(View.GONE);
@@ -352,13 +359,13 @@ private void showContentLoading(boolean b){
 }
 
 private void initUi(View root){
-  searchView = root.findViewById(R.id.lov_simple_search_view);
-  btnClearText = root.findViewById(R.id.lov_simple_btn_clear_search);
-  recyclerView = root.findViewById(R.id.lov_simple_list);
-  progressBar = root.findViewById(R.id.lov_simple_progressBar);
-  tvMessage = root.findViewById(R.id.lov_simple_tv_message);
-  root = root.findViewById(R.id.lov_simple_root);
-  btnBack = root.findViewById(R.id.lov_simple_btn_back);
+  searchView = root.findViewById(com.mojtaba_shafaei.android.R.id.lov_simple_search_view);
+  btnClearText = root.findViewById(com.mojtaba_shafaei.android.R.id.lov_simple_btn_clear_search);
+  recyclerView = root.findViewById(com.mojtaba_shafaei.android.R.id.lov_simple_list);
+  progressBar = root.findViewById(com.mojtaba_shafaei.android.R.id.lov_simple_progressBar);
+  tvMessage = root.findViewById(com.mojtaba_shafaei.android.R.id.lov_simple_tv_message);
+  root = root.findViewById(com.mojtaba_shafaei.android.R.id.lov_simple_root);
+  btnBack = root.findViewById(com.mojtaba_shafaei.android.R.id.lov_simple_btn_back);
 
   ViewCompat.setLayoutDirection(root, ViewCompat.LAYOUT_DIRECTION_RTL);
 
@@ -389,7 +396,7 @@ private void hideErrors(){
 @UiThread
 private void showInternetError(){
   tvMessage.setVisibility(VISIBLE);
-  tvMessage.setText(getString(R.string.lov_simple_no_internet_connection));
+  tvMessage.setText(getString(com.mojtaba_shafaei.android.R.string.lov_simple_no_internet_connection));
 }
 
 public LovSimple setOnResultListener(OnResultListener mOnResultListener){
@@ -445,9 +452,9 @@ public interface OnResultListener{
 private class InputDataKeeper{
 
   String query;
-  List<Item> data;
+  Lce<List<Item>> data;
 
-  InputDataKeeper(String query, List<Item> data){
+  InputDataKeeper(String query, Lce<List<Item>> data){
     this.query = query;
     this.data = data;
   }

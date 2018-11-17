@@ -1,8 +1,8 @@
-package com.mojtaba_shafaei.android;
+package com.mojtaba_shafaei.android.lovSimple;
 
 import android.support.annotation.Nullable;
 import android.support.v7.util.DiffUtil.DiffResult;
-import com.mojtaba_shafaei.android.LovSimple.Item;
+import com.mojtaba_shafaei.android.lovSimple.LovSimple.Item;
 import io.reactivex.Single;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;

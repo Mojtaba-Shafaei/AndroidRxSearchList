@@ -1,6 +1,6 @@
 package com.mojtaba_shafaei.android.lovSimpleSample;
 
-import com.mojtaba_shafaei.android.LovSimple;
+import com.mojtaba_shafaei.android.lovSimple.LovSimple;
 
 class Job implements LovSimple.Item{
 

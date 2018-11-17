@@ -1,4 +1,4 @@
-package com.mojtaba_shafaei.android;
+package com.mojtaba_shafaei.android.lovSimple;
 
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
@@ -9,7 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
-import com.mojtaba_shafaei.android.LovSimple.Item;
+import com.mojtaba_shafaei.android.lovSimple.LovSimple.Item;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;

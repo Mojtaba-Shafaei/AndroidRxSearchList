@@ -1,4 +1,4 @@
-package com.mojtaba_shafaei.android;
+package com.mojtaba_shafaei.android.lovSimple;
 
 import android.graphics.Typeface;
 import android.os.Build;
@@ -8,6 +8,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import com.mojtaba_shafaei.android.R;
 
 /**
  * Created by mojtaba on 9/23/17.

@@ -4,8 +4,8 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.TextView;
-import com.mojtaba_shafaei.android.LovSimple;
-import com.mojtaba_shafaei.android.LovSimple.Item;
+import com.mojtaba_shafaei.android.lovSimple.LovSimple;
+import com.mojtaba_shafaei.android.lovSimple.LovSimple.Item;
 
 public class MainActivity extends AppCompatActivity{
 
