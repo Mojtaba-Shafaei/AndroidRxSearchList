@@ -19,7 +19,6 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewCompat;
-import android.support.v4.widget.ContentLoadingProgressBar;
 import android.support.v7.app.AppCompatDialogFragment;
 import android.support.v7.widget.AppCompatEditText;
 import android.support.v7.widget.AppCompatImageButton;
@@ -37,6 +36,7 @@ import android.view.WindowManager;
 import android.view.animation.DecelerateInterpolator;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.ProgressBar;
 import com.jakewharton.rxbinding2.widget.RxTextView;
 import com.jakewharton.rxbinding2.widget.TextViewAfterTextChangeEvent;
 import io.reactivex.Observable;
@@ -68,11 +68,12 @@ public interface Item{
 }
 
 static Typeface TYPEFACE_IRANSANS_BOLD, TYPEFACE_IRANSANS_NORMAL;
-//<editor-fold desc="ButterKnife">
+
+//<editor-fold desc="bind ui">
 private AppCompatEditText searchView;
 private AppCompatImageButton btnClearText;
 private RecyclerView recyclerView;
-private ContentLoadingProgressBar progressBar;
+private ProgressBar progressBar;
 private AppCompatTextView tvMessage;
 private AppCompatImageButton btnBack;
 //</editor-fold>
@@ -138,6 +139,7 @@ public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup _
 
   adapter.setHasStableIds(true);
 
+  searchView.setTypeface(TYPEFACE_IRANSANS_NORMAL);
   tvMessage.setTypeface(TYPEFACE_IRANSANS_NORMAL);
   tvMessage.setText(getString(R.string.lov_simple_no_data1p));
   recyclerView.setAdapter(adapter);
