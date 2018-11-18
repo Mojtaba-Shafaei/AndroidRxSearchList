@@ -1,6 +1,5 @@
 package com.mojtaba_shafaei.android.lovSimpleSample;
 
-import android.os.SystemClock;
 import com.mojtaba_shafaei.android.lovSimple.LovSimple;
 import com.mojtaba_shafaei.android.lovSimple.LovSimple.Item;
 import com.mojtaba_shafaei.android.lovSimple.LovSimple.Lce;
@@ -41,18 +40,6 @@ static{
   items.add(new Job("22", "22th job with 1 code", 1));
 }
 
-static Observable<Lce<List<Item>>> getAllList(){
-  return Observable.fromCallable(() -> {
-    SystemClock.sleep(3000);
-    return items;
-  })
-      .subscribeOn(Schedulers.io())
-//      .mergeWith(Observable.interval(5, TimeUnit.SECONDS, Schedulers.computation()))
-      .map(Lce::data)
-      .startWith(Lce.<List<Item>>loading())
-      ;
-}
-
 static io.reactivex.Observable<Lce<List<Item>>> getError(){
   return io.reactivex.Observable.just(Lce.error(new Error("Error Happened")));
 }
@@ -75,5 +62,15 @@ static io.reactivex.Observable<Lce<List<Item>>> getList(Observable<String> query
             .startWith(Lce.<List<Item>>loading());
 
       });
+}
+
+static io.reactivex.Observable<Lce<List<Item>>> getList(){
+  return Observable.fromIterable(items)
+      .toList()
+      .toObservable()
+      .map(Lce::data)
+      .delay(3, TimeUnit.SECONDS, Schedulers.computation())//make delay similar as online APIs.
+      .startWith(Lce.<List<Item>>loading());
+
 }
 }

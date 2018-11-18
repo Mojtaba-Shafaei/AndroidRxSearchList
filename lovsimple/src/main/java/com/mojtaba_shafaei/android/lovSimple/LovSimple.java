@@ -424,8 +424,27 @@ public LovSimple setOnDismissListener(OnDismissListener mOnDismissListener){
   return this;
 }
 
+/**
+ * Use this method to change LOV's data according to entered query text specially with online API.<br/>
+ *
+ * Just use this method or {@link #setItems(Lce)}
+ *
+ * @see #setItems(Lce)
+ */
 public void setItems(Observable<Lce<List<Item>>> itemsObservable){
   itemsObservable.subscribe(mItemsSubject);
+}
+
+/**
+ * @param lceItems an instance of {@code Lce<List<Item>>}.<br/>
+ *
+ *                 Use this method to initialize LOV's data once.<br/>
+ *
+ *                 Just use this method or {@link #setItems(Observable)}
+ * @see #setItems(Observable)
+ */
+public void setItems(Lce<List<Item>> lceItems){
+  mItemsSubject.onNext(lceItems);
 }
 
 public Observable<String> getQueries(){

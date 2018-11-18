@@ -6,11 +6,16 @@ import android.util.Log;
 import android.widget.TextView;
 import com.mojtaba_shafaei.android.lovSimple.LovSimple;
 import com.mojtaba_shafaei.android.lovSimple.LovSimple.Item;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 
 public class MainActivity extends AppCompatActivity{
 
 private String TAG = "MainActivity";
 private TextView textView;
+
+private Disposable subscribe;
 
 @Override
 protected void onCreate(Bundle savedInstanceState){
@@ -22,10 +27,21 @@ protected void onCreate(Bundle savedInstanceState){
       .setOnCancelListener(dialog -> Log.d(TAG, "cancelled: "))
       .setOnDismissListener(dialog -> Log.d(TAG, "dismissed: "));
 
+  //test for online API
+//  lovSimple.setItems(DataMocker.getList(lovSimple.getQueries()));
+//  findViewById(R.id.button).setOnClickListener(view -> lovSimple.show(getSupportFragmentManager(), ""));
 
-  lovSimple.setItems(DataMocker.getList(lovSimple.getQueries()));
+  //test for offline
 
-  findViewById(R.id.button).setOnClickListener(view -> lovSimple.show(getSupportFragmentManager(), ""));
+  findViewById(R.id.button)
+      .setOnClickListener(view -> {
+        lovSimple.show(getSupportFragmentManager(), "");
+        //test for offline
+        subscribe = DataMocker.getList()
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(lovSimple::setItems);
+      });
 
   textView = findViewById(R.id.tvResult);
 }
@@ -39,5 +55,13 @@ private void displayItem(Item item){
   } else{
     Log.d(TAG, "displayItem : JUST returned");
   }
+}
+
+@Override
+protected void onDestroy(){
+  if(subscribe != null){
+    subscribe.dispose();
+  }
+  super.onDestroy();
 }
 }
