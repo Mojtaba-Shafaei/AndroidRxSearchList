@@ -6,9 +6,7 @@ import android.util.Log;
 import android.widget.TextView;
 import com.mojtaba_shafaei.android.lovSimple.LovSimple;
 import com.mojtaba_shafaei.android.lovSimple.LovSimple.Item;
-import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.schedulers.Schedulers;
 
 public class MainActivity extends AppCompatActivity{
 
@@ -22,27 +20,33 @@ protected void onCreate(Bundle savedInstanceState){
   super.onCreate(savedInstanceState);
   setContentView(R.layout.activity_main);
 
-  LovSimple lovSimple = LovSimple.create("Enter Query", "with")
+  LovSimple lovSimple = LovSimple.create("Enter Query", "job")
       .setOnResultListener(this::displayItem)
       .setOnCancelListener(dialog -> Log.d(TAG, "cancelled: "))
       .setOnDismissListener(dialog -> Log.d(TAG, "dismissed: "));
 
+  subscribe = lovSimple.getQueryIntent()
+      .flatMap(DataMocker::getList)
+      .subscribe(lovSimple::setState);
+
   //test for online API
-//  lovSimple.setItems(DataMocker.getList(lovSimple.getQueries()));
-//  findViewById(R.id.button).setOnClickListener(view -> lovSimple.show(getSupportFragmentManager(), ""));
+
+  findViewById(R.id.button).setOnClickListener(view -> {
+    lovSimple.show(getSupportFragmentManager(), "");
+  });
 
   //test for offline
 
-  findViewById(R.id.button)
+  /*findViewById(R.id.button)
       .setOnClickListener(view -> {
         lovSimple.show(getSupportFragmentManager(), "");
         //test for offline
         subscribe = DataMocker.getList()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(lovSimple::setItems);
+            .subscribe(lovSimple::setState);
       });
-
+*/
   textView = findViewById(R.id.tvResult);
 }
 

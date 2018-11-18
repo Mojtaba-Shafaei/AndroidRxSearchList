@@ -44,7 +44,6 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.observers.DisposableObserver;
 import io.reactivex.schedulers.Schedulers;
-import io.reactivex.subjects.BehaviorSubject;
 import io.reactivex.subjects.PublishSubject;
 import java.util.ArrayList;
 import java.util.List;
@@ -81,21 +80,21 @@ private AppCompatImageButton btnBack;
 private LovSimpleAdapter adapter;
 private final CompositeDisposable mDisposable = new CompositeDisposable();
 /////////////////////////////////////
-private CharSequence searchViewHint;
-private CharSequence mSearchText;
+private CharSequence mSearchViewHint;
+private CharSequence mDefaultSearchText;
 private OnResultListener mOnResultListener;
 private Dialog.OnCancelListener mOnCancelListener;
 private Dialog.OnDismissListener mOnDismissListener;
 
 private final PublishSubject<Lce<List<Item>>> mItemsSubject = PublishSubject.create();
-private final BehaviorSubject<String> mQuerySubject = BehaviorSubject.create();
+private final PublishSubject<String> mQuerySubject = PublishSubject.create();
 
 /////////////////////////////////////
 //
 public static LovSimple create(CharSequence searchViewHint, CharSequence searchText){
   LovSimple lovSimple = new LovSimple();
-  lovSimple.searchViewHint = searchViewHint;
-  lovSimple.mSearchText = StringUtils.defaultIfBlank(searchText);
+  lovSimple.mSearchViewHint = StringUtils.defaultIfBlank(searchViewHint);
+  lovSimple.mDefaultSearchText = StringUtils.defaultIfBlank(searchText);
   return lovSimple;
 }
 
@@ -121,8 +120,7 @@ public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup _
 
   initUi(view);
 
-  searchView.setHint(StringUtils.defaultIfBlank(searchViewHint));
-  searchView.setText(StringUtils.defaultIfBlank(mSearchText));
+  searchView.setHint(mSearchViewHint);
 
   LinearLayoutManager linearLayoutManager = new LinearLayoutManager(inflater.getContext());
   recyclerView.setLayoutManager(linearLayoutManager);
@@ -176,8 +174,19 @@ public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup _
     }
   });
 
-  searchView.setText(StringUtils.defaultIfBlank(mSearchText));
   btnClearText.setOnClickListener(v -> searchView.setText(""));
+
+  RxTextView.afterTextChangeEvents(searchView)
+      .observeOn(AndroidSchedulers.mainThread())
+      .map(this::setButtonClearTextVisibilityAndReturnQuery)
+      .observeOn(Schedulers.computation())
+      .throttleWithTimeout(600, TimeUnit.MILLISECONDS)
+      .map(query -> StringUtils.replaceAll(query, "\\s(\\s)+", StringUtils.SPACE))//remove duplicate spaces
+      .map(String::trim)
+      .distinctUntilChanged()
+      .onErrorReturnItem("")
+      .subscribe(mQuerySubject)
+  ;
   return view;
 }
 
@@ -208,19 +217,8 @@ private void hideSoftKeyboard(AppCompatEditText searchView){
   }
 }
 
-private Observable<String> getQueryIntent(){
-  return RxTextView.afterTextChangeEvents(searchView)
-      .observeOn(AndroidSchedulers.mainThread())
-      .map(this::setButtonClearTextVisibilityAndReturnQuery)
-      .observeOn(Schedulers.computation())
-      .throttleWithTimeout(600, TimeUnit.MILLISECONDS)
-      .map(query -> StringUtils.replaceAll(query, "\\s(\\s)+", StringUtils.SPACE))//remove duplicate spaces
-      .map(String::trim)
-      .distinctUntilChanged()
-      .map(it -> {
-        mQuerySubject.onNext(it);
-        return it;
-      });
+public Observable<String> getQueryIntent(){
+  return mQuerySubject.subscribeOn(Schedulers.io());
 }
 
 @Override
@@ -228,129 +226,133 @@ public void onStart(){
   super.onStart();
   tvMessage.setVisibility(View.GONE);
   try{
-    mDisposable.add(
-        Observable.combineLatest(getQueryIntent(), mItemsSubject, InputDataKeeper::new)
-            .switchMap(it -> {
-              if(it.data == null){
-                return Observable.just(Lce.<QueryDataKeeper>error(new Error(getString(R.string.lov_simple_no_data1p))));
-              }
-
-              if(it.data.isLoading()){
-                return Observable.just(Lce.<QueryDataKeeper>loading());
-              } else if(it.data.hasError()){
-                return Observable.just(Lce.<QueryDataKeeper>error(it.data.getError()));
-              }
-
-              //filter results base on query
-              if(it.query.length() > 1){
-                final String[] queries = StringUtils.split(it.query, StringUtils.SPACE);
-
-                List<Item> results = new ArrayList<>();
-                int priority;
-
-                for(Item item : it.data.getData()){
-                  priority = 0;
-
-                  if(StringUtils.startsWithIgnoreCase(item.getDes(), it.query)){
-                    priority++;
-                  }
-
-                  if(StringUtils.startsWithIgnoreCase(item.getDes(), it.query + ' ')){
-                    priority++;
-                  }
-
-                  if(StringUtils.equalsIgnoreCase(item.getDes(), it.query)){
-                    priority++;
-                  }
-
-                  if(StringUtils.endsWithIgnoreCase(item.getDes(), it.query)){
-                    priority++;
-                  }
-
-                  if(StringUtils.endsWithIgnoreCase(item.getDes(), ' ' + it.query)){
-                    priority++;
-                  }
-
-                  if(StringUtils.containsIgnoreCase(item.getDes(), it.query)){
-                    priority++;
-                  }
-
-                  for(String k : queries){
-                    priority += (StringUtils.countMatches(item.getDes().toUpperCase(), StringUtils.wrap(k.toUpperCase(), StringUtils.SPACE)));
-                  }
-
-                  for(String k : queries){
-                    priority += (StringUtils.countMatches(item.getDes().toUpperCase(), k.toUpperCase()));
-                  }
-
-                  item.setPriority(priority);
-                  //Add item if it is desired one.
-                  if(priority > 0){
-                    results.add(item);
-                  }
-                }
-                return Observable.just(Lce.data(new QueryDataKeeper(queries, results)));
-              } else{
-                return Observable.just(Lce.data(new QueryDataKeeper(null, it.data.getData())));
-              }
-            })
-            .observeOn(AndroidSchedulers.mainThread())
-//            .startWith(Lce.loading())
-            .subscribeWith(new DisposableObserver<Lce<QueryDataKeeper>>(){
-              @Override
-              public void onNext(Lce<QueryDataKeeper> lce){
-                if(isDisposed()){
-                  return;
-                }
-                Log.d(TAG, "onNext: " + lce.toString());
-
-                try{
-                  tvMessage.setVisibility(View.GONE);
-
-                  showContentLoading(lce.isLoading());
-                  if(lce.hasError()){
-                    showError(lce.getError().getMessage());
-                  } else{
-                    hideErrors();
-                  }
-
-                  final QueryDataKeeper queryDataKeeper = lce.getData();
-                  if(queryDataKeeper != null){
-                    adapter.setHighlightFor(queryDataKeeper.queries);
-                    adapter.setData(queryDataKeeper.data);
-
-                    if(CollectionUtils.isEmpty(queryDataKeeper.data)){
-                      tvMessage.setText(getString(R.string.lov_simple_no_data1p));
-                      tvMessage.setVisibility(VISIBLE);
-                    } else{
-                      tvMessage.setVisibility(View.GONE);
-                    }
-                  } else{
-                    adapter.clearData();
-                  }
-                } catch(Exception e){
-                  Log.e(TAG, "onNext: ", e);
-                }
-              }
-
-              @Override
-              public void onError(Throwable e){
-                Log.e(TAG, "onError() called with: e = [" + e + "],isDisposed() = [" + isDisposed() + "]");
-                if(isDisposed()){
-                  return;
-                }
-                showContentLoading(false);
-                showInternetError();
-              }
-
-              @Override
-              public void onComplete(){
-              }
-            })
-    );
+    render();
   } catch(Exception e){
     Log.e(TAG, "onCreate:RxSearch ", e);
   }
+
+  searchView.setText(mDefaultSearchText);
+}
+
+private void render(){
+  mDisposable.add(
+      mItemsSubject.switchMap(it -> {
+        if(it.isLoading()){
+          return Observable.just(Lce.<QueryDataKeeper>loading());
+        } else if(it.hasError()){
+          return Observable.just(Lce.<QueryDataKeeper>error(it.getError()));
+        }
+
+        if(it.getData() == null){
+          return Observable.just(Lce.<QueryDataKeeper>error(new Error(getString(R.string.lov_simple_no_data1p))));
+        }
+
+        //filter results base on query
+        if(StringUtils.length(it.getQuery()) > 1){
+          final String[] queries = StringUtils.split(it.getQuery(), StringUtils.SPACE);
+
+          List<Item> results = new ArrayList<>();
+          int priority;
+
+          for(Item item : it.getData()){
+            priority = 0;
+
+            if(StringUtils.startsWithIgnoreCase(item.getDes(), it.getQuery())){
+              priority++;
+            }
+
+            if(StringUtils.startsWithIgnoreCase(item.getDes(), it.getQuery() + ' ')){
+              priority++;
+            }
+
+            if(StringUtils.equalsIgnoreCase(item.getDes(), it.getQuery())){
+              priority++;
+            }
+
+            if(StringUtils.endsWithIgnoreCase(item.getDes(), it.getQuery())){
+              priority++;
+            }
+
+            if(StringUtils.endsWithIgnoreCase(item.getDes(), ' ' + it.getQuery())){
+              priority++;
+            }
+
+            if(StringUtils.containsIgnoreCase(item.getDes(), it.getQuery())){
+              priority++;
+            }
+
+            for(String k : queries){
+              priority += (StringUtils
+                  .countMatches(item.getDes().toUpperCase(), StringUtils.wrap(k.toUpperCase(), StringUtils.SPACE)));
+            }
+
+            for(String k : queries){
+              priority += (StringUtils.countMatches(item.getDes().toUpperCase(), k.toUpperCase()));
+            }
+
+            item.setPriority(priority);
+            //Add item if it is desired one.
+            if(priority > 0){
+              results.add(item);
+            }
+          }
+          return Observable.just(Lce.data(it.getQuery(), new QueryDataKeeper(queries, results)));
+        } else{
+          return Observable.just(Lce.data(it.getQuery(), new QueryDataKeeper(null, it.getData())));
+        }
+      })
+          .observeOn(AndroidSchedulers.mainThread())
+          .startWith(Lce.loading())
+          .subscribeWith(new DisposableObserver<Lce<QueryDataKeeper>>(){
+            @Override
+            public void onNext(Lce<QueryDataKeeper> lce){
+              if(isDisposed()){
+                return;
+              }
+              Log.d(TAG, "onNext: " + lce.toString());
+              try{
+                tvMessage.setVisibility(View.GONE);
+                showContentLoading(lce.isLoading());
+                if(lce.hasError()){
+                  showError(lce.getError().getMessage());
+                } else{
+                  hideErrors();
+                }
+
+                final QueryDataKeeper queryDataKeeper = lce.getData();
+                if(queryDataKeeper != null){
+                  adapter.setHighlightFor(queryDataKeeper.queries);
+                  adapter.setData(queryDataKeeper.data);
+
+                  if(CollectionUtils.isEmpty(queryDataKeeper.data)){
+                    tvMessage.setText(getString(R.string.lov_simple_no_data1p));
+                    tvMessage.setVisibility(VISIBLE);
+                  } else{
+                    tvMessage.setVisibility(View.GONE);
+                  }
+                } else{
+                  adapter.clearData();
+                }
+              } catch(Exception e){
+                Log.e(TAG, "onNext: ", e);
+              }
+            }
+
+            @Override
+            public void onError(Throwable e){
+              Log.e(TAG, "onError() called with: e = [" + e + "],isDisposed() = [" + isDisposed() + "]");
+              if(isDisposed()){
+                return;
+              }
+              showContentLoading(false);
+              showInternetError();
+            }
+
+            @Override
+            public void onComplete(){
+            }
+          })
+  );
 }
 
 private String setButtonClearTextVisibilityAndReturnQuery(TextViewAfterTextChangeEvent event){
@@ -427,11 +429,11 @@ public LovSimple setOnDismissListener(OnDismissListener mOnDismissListener){
 /**
  * Use this method to change LOV's data according to entered query text specially with online API.<br/>
  *
- * Just use this method or {@link #setItems(Lce)}
+ * Just use this method or {@link #setState(Lce)}
  *
- * @see #setItems(Lce)
+ * @see #setState(Lce)
  */
-public void setItems(Observable<Lce<List<Item>>> itemsObservable){
+public void setState(Observable<Lce<List<Item>>> itemsObservable){
   itemsObservable.subscribe(mItemsSubject);
 }
 
@@ -440,16 +442,11 @@ public void setItems(Observable<Lce<List<Item>>> itemsObservable){
  *
  *                 Use this method to initialize LOV's data once.<br/>
  *
- *                 Just use this method or {@link #setItems(Observable)}
- * @see #setItems(Observable)
+ *                 Just use this method or {@link #setState(Observable)}
+ * @see #setState(Observable)
  */
-public void setItems(Lce<List<Item>> lceItems){
+public void setState(Lce<List<Item>> lceItems){
   mItemsSubject.onNext(lceItems);
-}
-
-public Observable<String> getQueries(){
-  return mQuerySubject
-      .subscribeOn(Schedulers.io());
 }
 
 @Override
@@ -492,17 +489,6 @@ public interface OnResultListener{
   void onResult(Item item);
 }
 
-private class InputDataKeeper{
-
-  String query;
-  Lce<List<Item>> data;
-
-  InputDataKeeper(String query, Lce<List<Item>> data){
-    this.query = query;
-    this.data = data;
-  }
-}
-
 private class QueryDataKeeper{
 
   String[] queries;
@@ -522,6 +508,8 @@ public abstract static class Lce<T>{
 
   public abstract Throwable getError();
 
+  public abstract String getQuery();
+
   public abstract T getData();
 
   @Override
@@ -535,7 +523,7 @@ public abstract static class Lce<T>{
         .toString();
   }
 
-  public static <T> Lce<T> data(final T data){
+  public static <T> Lce<T> data(final String query, final T data){
     return new Lce<T>(){
       @Override
       public boolean isLoading(){
@@ -555,6 +543,11 @@ public abstract static class Lce<T>{
       @Override
       public T getData(){
         return data;
+      }
+
+      @Override
+      public String getQuery(){
+        return query;
       }
     };
   }
@@ -580,6 +573,11 @@ public abstract static class Lce<T>{
       public T getData(){
         return null;
       }
+
+      @Override
+      public String getQuery(){
+        return null;
+      }
     };
   }
 
@@ -602,6 +600,11 @@ public abstract static class Lce<T>{
 
       @Override
       public T getData(){
+        return null;
+      }
+
+      @Override
+      public String getQuery(){
         return null;
       }
     };
