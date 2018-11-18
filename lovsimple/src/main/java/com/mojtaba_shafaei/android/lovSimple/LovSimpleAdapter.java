@@ -8,12 +8,9 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 import com.mojtaba_shafaei.android.lovSimple.LovSimple.Item;
-import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.schedulers.Schedulers;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -102,6 +99,18 @@ void setData(List<Item> list){
     clearData();
 
   } else{
+    data.clear();
+    data.addAll(ObjectUtils.defaultIfNull(list, new ArrayList<>(0)));
+    final ComparatorChain<Item> chain = new ComparatorChain<>();
+    chain.addComparator((o1, o2) -> this.compare(o1.getPriority(), o2.getPriority()), true);
+    chain.addComparator((o1, o2) -> mCollator.compare(o1.getDes(), o2.getDes()));
+    Collections.sort(data, chain);
+    notifyDataSetChanged();
+    mRecyclerView.scrollToPosition(0);
+
+    /*
+    * some bugs in RV make me to ignore PERFORMANCE :(
+    *
     mDisposable.add(DiffUtil.getDiff(data, list)
                         .subscribeOn(Schedulers.computation())
                         .observeOn(AndroidSchedulers.mainThread())
@@ -124,7 +133,7 @@ void setData(List<Item> list){
                             mRecyclerView.scrollToPosition(0);
                           }
                         })
-    );
+    );*/
   }
 
 }
