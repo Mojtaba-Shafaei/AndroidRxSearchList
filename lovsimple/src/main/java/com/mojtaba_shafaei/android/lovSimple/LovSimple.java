@@ -38,25 +38,23 @@ import android.view.animation.DecelerateInterpolator;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import com.jakewharton.rxbinding2.widget.RxTextView;
+import com.jakewharton.rxbinding2.widget.TextViewAfterTextChangeEvent;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.observers.DisposableObserver;
 import io.reactivex.schedulers.Schedulers;
-import io.reactivex.subjects.ReplaySubject;
+import io.reactivex.subjects.BehaviorSubject;
+import io.reactivex.subjects.PublishSubject;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 public class LovSimple extends AppCompatDialogFragment{
 
 private final String TAG = "LovSimple";
-
-public LovSimple setItemsObservable(Observable<Lce<List<Item>>> itemsObservable){
-  itemsObservable.subscribe(mItemsSubject);
-  return this;
-}
 
 public interface Item{
 
@@ -82,7 +80,6 @@ private AppCompatImageButton btnBack;
 
 private LovSimpleAdapter adapter;
 private final CompositeDisposable mDisposable = new CompositeDisposable();
-private LinearLayoutManager mLinearLayoutManager;
 /////////////////////////////////////
 private CharSequence searchViewHint;
 private CharSequence mSearchText;
@@ -90,14 +87,15 @@ private OnResultListener mOnResultListener;
 private Dialog.OnCancelListener mOnCancelListener;
 private Dialog.OnDismissListener mOnDismissListener;
 
-private final ReplaySubject<Lce<List<Item>>> mItemsSubject = ReplaySubject.create();
+private final PublishSubject<Lce<List<Item>>> mItemsSubject = PublishSubject.create();
+private final BehaviorSubject<String> mQuerySubject = BehaviorSubject.create();
 
 /////////////////////////////////////
 //
 public static LovSimple create(CharSequence searchViewHint, CharSequence searchText){
   LovSimple lovSimple = new LovSimple();
   lovSimple.searchViewHint = searchViewHint;
-  lovSimple.mSearchText = searchText;
+  lovSimple.mSearchText = StringUtils.defaultIfBlank(searchText);
   return lovSimple;
 }
 
@@ -124,10 +122,10 @@ public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup _
   initUi(view);
 
   searchView.setHint(StringUtils.defaultIfBlank(searchViewHint));
-//  searchView.setText(StringUtils.defaultIfBlank(mSearchText));
+  searchView.setText(StringUtils.defaultIfBlank(mSearchText));
 
-  mLinearLayoutManager = new LinearLayoutManager(inflater.getContext());
-  recyclerView.setLayoutManager(mLinearLayoutManager);
+  LinearLayoutManager linearLayoutManager = new LinearLayoutManager(inflater.getContext());
+  recyclerView.setLayoutManager(linearLayoutManager);
   recyclerView.setHasFixedSize(true);
   adapter = new LovSimpleAdapter(recyclerView,
                                  (position, data) -> {
@@ -210,32 +208,33 @@ private void hideSoftKeyboard(AppCompatEditText searchView){
   }
 }
 
+private Observable<String> getQueryIntent(){
+  return RxTextView.afterTextChangeEvents(searchView)
+      .observeOn(AndroidSchedulers.mainThread())
+      .map(this::setButtonClearTextVisibilityAndReturnQuery)
+      .observeOn(Schedulers.computation())
+      .throttleWithTimeout(600, TimeUnit.MILLISECONDS)
+      .map(query -> StringUtils.replaceAll(query, "\\s(\\s)+", StringUtils.SPACE))//remove duplicate spaces
+      .map(String::trim)
+      .distinctUntilChanged()
+      .map(it -> {
+        mQuerySubject.onNext(it);
+        return it;
+      });
+}
+
 @Override
 public void onStart(){
   super.onStart();
   tvMessage.setVisibility(View.GONE);
   try{
     mDisposable.add(
-        Observable.combineLatest(
-            RxTextView.afterTextChangeEvents(searchView)
-                .observeOn(AndroidSchedulers.mainThread())
-                .map(event -> {
-                  btnClearText.setVisibility(StringUtils.isEmpty(event.editable()) ? View.GONE : View.VISIBLE);
-                  return event;
-                })
-                .observeOn(Schedulers.computation())
-                .throttleWithTimeout(600, TimeUnit.MILLISECONDS)
-                .map(event -> StringUtils.defaultIfBlank(event.editable()))
-                .map(query -> StringUtils.replaceAll(query, "\\s(\\s)+", StringUtils.SPACE))//remove duplicate spaces
-                .map(String::trim)
-                .map(String::toUpperCase)
-            , mItemsSubject
-            , InputDataKeeper::new)
+        Observable.combineLatest(getQueryIntent(), mItemsSubject, InputDataKeeper::new)
+            .switchMap(it -> {
+              if(it.data == null){
+                return Observable.just(Lce.<QueryDataKeeper>error(new Error(getString(R.string.lov_simple_no_data1p))));
+              }
 
-            .distinctUntilChanged()
-            .startWith(new InputDataKeeper("", Lce.loading()))
-            .subscribeOn(Schedulers.io())
-            .flatMap(it -> {
               if(it.data.isLoading()){
                 return Observable.just(Lce.<QueryDataKeeper>loading());
               } else if(it.data.hasError()){
@@ -277,11 +276,11 @@ public void onStart(){
                   }
 
                   for(String k : queries){
-                    priority += (StringUtils.countMatches(item.getDes().toUpperCase(), StringUtils.wrap(k, StringUtils.SPACE)));
+                    priority += (StringUtils.countMatches(item.getDes().toUpperCase(), StringUtils.wrap(k.toUpperCase(), StringUtils.SPACE)));
                   }
 
                   for(String k : queries){
-                    priority += (StringUtils.countMatches(item.getDes().toUpperCase(), k));
+                    priority += (StringUtils.countMatches(item.getDes().toUpperCase(), k.toUpperCase()));
                   }
 
                   item.setPriority(priority);
@@ -296,38 +295,38 @@ public void onStart(){
               }
             })
             .observeOn(AndroidSchedulers.mainThread())
+//            .startWith(Lce.loading())
             .subscribeWith(new DisposableObserver<Lce<QueryDataKeeper>>(){
               @Override
               public void onNext(Lce<QueryDataKeeper> lce){
                 if(isDisposed()){
                   return;
                 }
+                Log.d(TAG, "onNext: " + lce.toString());
+
                 try{
-                  if(lce.isLoading()){
-                    hideErrors();
-                    showContentLoading(true);
+                  tvMessage.setVisibility(View.GONE);
 
-                  } else if(lce.hasError()){
-                    showContentLoading(false);
-                    showInternetError();
-
+                  showContentLoading(lce.isLoading());
+                  if(lce.hasError()){
+                    showError(lce.getError().getMessage());
                   } else{
                     hideErrors();
-                    showContentLoading(false);
-                    final QueryDataKeeper queryDataKeeper = lce.getData();
-                    if(queryDataKeeper != null){
-                      adapter.setHighlightFor(queryDataKeeper.queries);
-                      adapter.setData(queryDataKeeper.data);
+                  }
 
-                      if(CollectionUtils.isEmpty(queryDataKeeper.data)){
-                        tvMessage.setText(getString(R.string.lov_simple_no_data1p));
-                        tvMessage.setVisibility(VISIBLE);
-                      } else{
-                        tvMessage.setVisibility(View.GONE);
-                      }
+                  final QueryDataKeeper queryDataKeeper = lce.getData();
+                  if(queryDataKeeper != null){
+                    adapter.setHighlightFor(queryDataKeeper.queries);
+                    adapter.setData(queryDataKeeper.data);
+
+                    if(CollectionUtils.isEmpty(queryDataKeeper.data)){
+                      tvMessage.setText(getString(R.string.lov_simple_no_data1p));
+                      tvMessage.setVisibility(VISIBLE);
                     } else{
-                      showInternetError();
+                      tvMessage.setVisibility(View.GONE);
                     }
+                  } else{
+                    adapter.clearData();
                   }
                 } catch(Exception e){
                   Log.e(TAG, "onNext: ", e);
@@ -352,6 +351,11 @@ public void onStart(){
   } catch(Exception e){
     Log.e(TAG, "onCreate:RxSearch ", e);
   }
+}
+
+private String setButtonClearTextVisibilityAndReturnQuery(TextViewAfterTextChangeEvent event){
+  btnClearText.setVisibility(StringUtils.isEmpty(event.editable()) ? View.GONE : View.VISIBLE);
+  return StringUtils.defaultIfBlank(event.editable());
 }
 
 private void showContentLoading(boolean b){
@@ -399,6 +403,12 @@ private void showInternetError(){
   tvMessage.setText(getString(R.string.lov_simple_no_internet_connection));
 }
 
+@UiThread
+private void showError(String error){
+  tvMessage.setVisibility(VISIBLE);
+  tvMessage.setText(error);
+}
+
 public LovSimple setOnResultListener(OnResultListener mOnResultListener){
   this.mOnResultListener = mOnResultListener;
   return this;
@@ -414,6 +424,15 @@ public LovSimple setOnDismissListener(OnDismissListener mOnDismissListener){
   return this;
 }
 
+public void setItems(Observable<Lce<List<Item>>> itemsObservable){
+  itemsObservable.subscribe(mItemsSubject);
+}
+
+public Observable<String> getQueries(){
+  return mQuerySubject
+      .subscribeOn(Schedulers.io());
+}
+
 @Override
 public void onPause(){
   hideSoftKeyboard(searchView);
@@ -423,8 +442,13 @@ public void onPause(){
 
 @Override
 public void onDestroyView(){
-  mOnResultListener = null;
-  recyclerView.setAdapter(null);
+  try{
+    mOnResultListener = null;
+    recyclerView.setAdapter(null);
+    mDisposable.clear();
+  } catch(Exception e){
+    e.printStackTrace();
+  }
   super.onDestroyView();
 }
 
@@ -473,13 +497,24 @@ private class QueryDataKeeper{
 
 public abstract static class Lce<T>{
 
-  abstract boolean isLoading();
+  public abstract boolean isLoading();
 
-  abstract boolean hasError();
+  public abstract boolean hasError();
 
-  abstract Throwable getError();
+  public abstract Throwable getError();
 
-  abstract T getData();
+  public abstract T getData();
+
+  @Override
+  public String toString(){
+    return new ToStringBuilder(this)
+        .append("Loading", isLoading())
+        .append("hasError", hasError())
+        .append("error", getError())
+        .append("data", (getData() instanceof List) ? "listSize=" + CollectionUtils.size(getData()) :
+            (getData() instanceof QueryDataKeeper) ? CollectionUtils.size(((QueryDataKeeper) getData()).data) : getData())
+        .toString();
+  }
 
   public static <T> Lce<T> data(final T data){
     return new Lce<T>(){

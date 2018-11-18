@@ -111,15 +111,23 @@
 
     <android.support.v7.widget.AppCompatTextView
       android:id="@+id/lov_simple_tv_message"
+      style="@style/TextAppearance.AppCompat.Small"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:layout_marginTop="16dp"
       android:layout_gravity="center_horizontal|top"
+      android:paddingTop="4dp"
+      android:paddingBottom="4dp"
+      android:paddingLeft="16dp"
+      android:paddingRight="16dp"
+      android:background="@drawable/lov_simple_bg_toast"
       android:gravity="center"
-      android:textColor="@color/lov_simple_text_colors_dark"
+      android:minHeight="40dp"
+      android:textColor="#B94A48"
       android:textSize="14sp"
       android:visibility="gone"
-      tools:text="@tools:sample/lorem"/>
+      tools:text="@tools:sample/lorem"
+      tools:visibility="visible"/>
   </FrameLayout>
 
 </android.support.constraint.ConstraintLayout>

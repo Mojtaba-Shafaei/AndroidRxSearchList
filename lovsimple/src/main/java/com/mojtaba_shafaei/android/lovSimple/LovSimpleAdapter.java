@@ -38,8 +38,7 @@ private final CompositeDisposable mDisposable = new CompositeDisposable();
 
 private RecyclerView mRecyclerView;
 
-LovSimpleAdapter(RecyclerView recyclerView, OnListItemClickListener<LovSimple.Item> onListItemClickListener
-    , LayoutInflater inflater){
+LovSimpleAdapter(RecyclerView recyclerView, OnListItemClickListener<LovSimple.Item> onListItemClickListener, LayoutInflater inflater){
   this.mRecyclerView = recyclerView;
   this.itemClickListener = onListItemClickListener;
   this.inflater = inflater;
@@ -100,8 +99,7 @@ void setHighlightFor(String[] queries){
 
 void setData(List<Item> list){
   if(CollectionUtils.isEmpty(list)){
-    data.clear();
-    notifyDataSetChanged();
+    clearData();
 
   } else{
     mDisposable.add(DiffUtil.getDiff(data, list)
@@ -111,17 +109,16 @@ void setData(List<Item> list){
                           if(isDisposed()){
                             return;
                           }
-                          data.clear();
-                          data.addAll(ObjectUtils.defaultIfNull(list, new ArrayList<>(0)));
-                          final ComparatorChain<Item> chain = new ComparatorChain<>();
-                          chain.addComparator((o1, o2) -> this.compare(o1.getPriority(), o2.getPriority()), true);
-                          chain.addComparator((o1, o2) -> mCollator.compare(o1.getDes(), o2.getDes()));
-                          Collections.sort(data, chain);
-
                           if(diffResultLce.hasError()){
                             Toast.makeText(inflater.getContext().getApplicationContext(), diffResultLce.getError().getMessage(), Toast.LENGTH_LONG)
                                 .show();
                           } else{
+                            data.clear();
+                            data.addAll(ObjectUtils.defaultIfNull(list, new ArrayList<>(0)));
+                            final ComparatorChain<Item> chain = new ComparatorChain<>();
+                            chain.addComparator((o1, o2) -> this.compare(o1.getPriority(), o2.getPriority()), true);
+                            chain.addComparator((o1, o2) -> mCollator.compare(o1.getDes(), o2.getDes()));
+                            Collections.sort(data, chain);
 
                             diffResultLce.getData().dispatchUpdatesTo(LovSimpleAdapter.this);
                             mRecyclerView.scrollToPosition(0);
@@ -154,5 +151,10 @@ public void dispose(){
 @Override
 public boolean isDisposed(){
   return mDisposable.isDisposed();
+}
+
+void clearData(){
+  data.clear();
+  notifyDataSetChanged();
 }
 }

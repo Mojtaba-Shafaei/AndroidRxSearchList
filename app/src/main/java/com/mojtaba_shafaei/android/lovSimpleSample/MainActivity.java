@@ -20,8 +20,10 @@ protected void onCreate(Bundle savedInstanceState){
   LovSimple lovSimple = LovSimple.create("Enter Query", "with")
       .setOnResultListener(this::displayItem)
       .setOnCancelListener(dialog -> Log.d(TAG, "cancelled: "))
-      .setOnDismissListener(dialog -> Log.d(TAG, "dismissed: "))
-      .setItemsObservable(DataMocker.getList());
+      .setOnDismissListener(dialog -> Log.d(TAG, "dismissed: "));
+
+
+  lovSimple.setItems(DataMocker.getList(lovSimple.getQueries()));
 
   findViewById(R.id.button).setOnClickListener(view -> lovSimple.show(getSupportFragmentManager(), ""));
 

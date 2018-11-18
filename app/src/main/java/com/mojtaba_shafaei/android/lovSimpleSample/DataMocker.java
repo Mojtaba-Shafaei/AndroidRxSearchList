@@ -1,9 +1,11 @@
 package com.mojtaba_shafaei.android.lovSimpleSample;
 
-import com.mojtaba_shafaei.android.lovSimple.LovSimple.Lce;
+import android.os.SystemClock;
 import com.mojtaba_shafaei.android.lovSimple.LovSimple;
 import com.mojtaba_shafaei.android.lovSimple.LovSimple.Item;
+import com.mojtaba_shafaei.android.lovSimple.LovSimple.Lce;
 import io.reactivex.Observable;
+import io.reactivex.schedulers.Schedulers;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -12,8 +14,9 @@ class DataMocker{
 
 private final String TAG = "DataMocker";
 
-static io.reactivex.Observable<Lce<List<Item>>> getList(){
-  List<LovSimple.Item> items = new ArrayList<>();
+static List<LovSimple.Item> items = new ArrayList<>();
+
+static{
   items.add(new Job("1", "شغل یک از یک", 1));
   items.add(new Job("2", "آزاد شغل ۲", 1));
   items.add(new Job("3", "برنامه نویس", 1));
@@ -36,15 +39,41 @@ static io.reactivex.Observable<Lce<List<Item>>> getList(){
   items.add(new Job("20", "20th job with 1 code", 1));
   items.add(new Job("21", "21th job with 1 code", 1));
   items.add(new Job("22", "22th job with 1 code", 1));
+}
 
-  return Observable.timer(10, TimeUnit.SECONDS)
-      //.mergeWith(Observable.interval(5, TimeUnit.SECONDS, Schedulers.computation()))
-      .map(t -> Lce.data(items));
-
+static Observable<Lce<List<Item>>> getAllList(){
+  return Observable.fromCallable(() -> {
+    SystemClock.sleep(3000);
+    return items;
+  })
+      .subscribeOn(Schedulers.io())
+//      .mergeWith(Observable.interval(5, TimeUnit.SECONDS, Schedulers.computation()))
+      .map(Lce::data)
+      .startWith(Lce.<List<Item>>loading())
+      ;
 }
 
 static io.reactivex.Observable<Lce<List<Item>>> getError(){
   return io.reactivex.Observable.just(Lce.error(new Error("Error Happened")));
 }
 
+static io.reactivex.Observable<Lce<List<Item>>> getList(Observable<String> query){
+  return query
+      .subscribeOn(Schedulers.io())
+      .switchMap(it -> {
+        if(it.contentEquals("error")){ // ;) just for testing
+          return getError();
+
+        }
+
+        return Observable.fromIterable(items)
+            .filter(item -> item.getDes().contains(it))
+            .toList()
+            .toObservable()
+            .map(Lce::data)
+            .delay(3, TimeUnit.SECONDS, Schedulers.computation())//make delay similar as online APIs.
+            .startWith(Lce.<List<Item>>loading());
+
+      });
+}
 }
