@@ -36,6 +36,9 @@ private final CompositeDisposable mDisposable = new CompositeDisposable();
 private RecyclerView mRecyclerView;
 private boolean showLogo;
 
+/**
+ * @param showLogo show logo or a place holder for each row if {@code true}
+ */
 LovSimpleAdapter(RecyclerView recyclerView
     , boolean showLogo
     , OnListItemClickListener<LovSimple.Item> onListItemClickListener
