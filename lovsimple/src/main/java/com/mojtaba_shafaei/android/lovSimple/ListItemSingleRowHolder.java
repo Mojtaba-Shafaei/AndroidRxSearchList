@@ -48,28 +48,32 @@ void setTypeface(Typeface typeface){
   }
 }
 
-private void setLogo(CharSequence logoUrl){
-  if(StringUtils.isAllBlank(logoUrl)){
-    ivLogo.setVisibility(View.GONE);
-  } else{
+private void setLogo(boolean showLogo, CharSequence logoUrl){
+  if(showLogo){
     ivLogo.setVisibility(View.VISIBLE);
 
-    CircularProgressDrawable progressDrawable = new CircularProgressDrawable(ivLogo.getContext());
-    progressDrawable.setStyle(0);
-    progressDrawable.setColorSchemeColors(0xff00ddff, 0xff99cc00, 0xffffbb33, 0xffff4444);
-    progressDrawable.start();
+    if(StringUtils.isBlank(logoUrl)){
+      ivLogo.setImageResource(R.drawable.lov_simple_ic_no_image_grey500);
+    } else{
+      CircularProgressDrawable progressDrawable = new CircularProgressDrawable(ivLogo.getContext());
+      progressDrawable.setStyle(0);
+      progressDrawable.setColorSchemeColors(0xff00ddff, 0xff99cc00, 0xffffbb33, 0xffff4444);
+      progressDrawable.start();
 
-    Glide.with(ivLogo.getContext())
-        .asDrawable()
-        .apply(GlideUtil.getInstance().getOptions(progressDrawable))
-        .transition(withCrossFade())
-        .load(logoUrl)
-        .into(ivLogo);
+      Glide.with(ivLogo.getContext())
+          .asDrawable()
+          .apply(GlideUtil.getInstance().getOptions(progressDrawable))
+          .transition(withCrossFade())
+          .load(logoUrl)
+          .into(ivLogo);
+    }
+  } else{
+    ivLogo.setVisibility(View.GONE);
   }
 }
 
-public void fill(CharSequence title, CharSequence logoUrl){
+public void fill(CharSequence title, boolean showLogo, CharSequence logoUrl){
   setTitle(title);
-  setLogo(logoUrl);
+  setLogo(showLogo, logoUrl);
 }
 }

@@ -78,7 +78,7 @@ public void onBindViewHolder(@NonNull ListItemSingleRowHolder holder, int positi
       title = item.getDes();
     }
 
-    holder.fill(title, (showLogo ? item.getLogo() : null));
+    holder.fill(title, showLogo, item.getLogo());
 
     holder.itemView.setOnClickListener(
         (View v) -> itemClickListener.onListItemClicked(holder.getAdapterPosition(), item)

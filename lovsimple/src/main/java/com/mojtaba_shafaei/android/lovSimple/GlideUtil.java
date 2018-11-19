@@ -34,7 +34,7 @@ RequestOptions getOptions(Drawable placeHolder){
         .skipMemoryCache(true)
         .centerInside()
         .encodeFormat(CompressFormat.JPEG)
-        .error(R.drawable.ic_error_outline_red_200_24dp)
+        .error(R.drawable.lov_simple_ic_error_outline_red_200_24dp)
         .placeholder(placeHolder)
         .format(DecodeFormat.PREFER_RGB_565)
     ;
