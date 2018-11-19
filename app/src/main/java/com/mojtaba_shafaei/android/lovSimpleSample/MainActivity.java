@@ -20,7 +20,7 @@ protected void onCreate(Bundle savedInstanceState){
   super.onCreate(savedInstanceState);
   setContentView(R.layout.activity_main);
 
-  LovSimple lovSimple = LovSimple.create("Enter Query", "job",true)
+  LovSimple lovSimple = LovSimple.create("Enter Query", "job", true)
       .setOnResultListener(this::displayItem)
       .setOnCancelListener(dialog -> Log.d(TAG, "cancelled: "))
       .setOnDismissListener(dialog -> Log.d(TAG, "dismissed: "));
@@ -32,7 +32,7 @@ protected void onCreate(Bundle savedInstanceState){
   //test for online API
 
   findViewById(R.id.button).setOnClickListener(view -> {
-    lovSimple.show(getSupportFragmentManager(), "");
+    lovSimple.show(getSupportFragmentManager());
   });
 
   //test for offline
