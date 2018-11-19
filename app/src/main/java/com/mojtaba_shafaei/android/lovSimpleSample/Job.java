@@ -6,11 +6,13 @@ class Job implements LovSimple.Item{
 
 String code;
 String des;
+transient CharSequence logo;
 transient int priority;
 
-Job(String code, String des, int priority){
+Job(String code, String des, CharSequence logo, int priority){
   this.code = code;
   this.des = des;
+  this.logo = logo;
   this.priority = priority;
 }
 
@@ -27,6 +29,11 @@ public String getDes(){
 @Override
 public int getPriority(){
   return priority;
+}
+
+@Override
+public CharSequence getLogo(){
+  return logo;
 }
 
 @Override

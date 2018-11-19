@@ -34,9 +34,15 @@ private final Collator mCollator;
 private final CompositeDisposable mDisposable = new CompositeDisposable();
 
 private RecyclerView mRecyclerView;
+private boolean showLogo;
 
-LovSimpleAdapter(RecyclerView recyclerView, OnListItemClickListener<LovSimple.Item> onListItemClickListener, LayoutInflater inflater){
+LovSimpleAdapter(RecyclerView recyclerView
+    , boolean showLogo
+    , OnListItemClickListener<LovSimple.Item> onListItemClickListener
+    , LayoutInflater inflater){
+
   this.mRecyclerView = recyclerView;
+  this.showLogo = showLogo;
   this.itemClickListener = onListItemClickListener;
   this.inflater = inflater;
   mCollator = PersianCollator.getPersianInstance();
@@ -52,13 +58,14 @@ public ListItemSingleRowHolder onCreateViewHolder(@NonNull ViewGroup parent, int
 @Override
 public void onBindViewHolder(@NonNull ListItemSingleRowHolder holder, int position){
   try{
-    LovSimple.Item job = data.get(holder.getAdapterPosition());
+    LovSimple.Item item = data.get(holder.getAdapterPosition());
     holder.setTypeface(LovSimple.TYPEFACE_IRANSANS_NORMAL);
 
+    CharSequence title;
     if(queries != null && queries.length > 0){
-      SpannableStringBuilder ssb = new SpannableStringBuilder(job.getDes());
+      SpannableStringBuilder ssb = new SpannableStringBuilder(item.getDes());
       for(String k : queries){
-        final int index = StringUtils.indexOfIgnoreCase(job.getDes(), k);
+        final int index = StringUtils.indexOfIgnoreCase(item.getDes(), k);
         if(index != -1){
           ssb.setSpan(
               new CustomTypefaceSpan("", LovSimple.TYPEFACE_IRANSANS_BOLD),
@@ -66,15 +73,16 @@ public void onBindViewHolder(@NonNull ListItemSingleRowHolder holder, int positi
               Spannable.SPAN_INCLUSIVE_INCLUSIVE);
         }
       }
-      holder.setText(ssb);
-      ssb.clear();
-
+      title = ssb;
     } else{
-      holder.setText(job.getDes());
+      title = item.getDes();
     }
 
-    holder.itemView.setOnClickListener((View v) -> itemClickListener
-        .onListItemClicked(holder.getAdapterPosition(), job));
+    holder.fill(title, (showLogo ? item.getLogo() : null));
+
+    holder.itemView.setOnClickListener(
+        (View v) -> itemClickListener.onListItemClicked(holder.getAdapterPosition(), item)
+    );
   } catch(IndexOutOfBoundsException e){
     Log.e(TAG, "Exception handled", e);
   }

@@ -61,6 +61,8 @@ public interface Item{
 
   String getDes();
 
+  CharSequence getLogo();
+
   int getPriority();
 
   void setPriority(int priority);
@@ -83,6 +85,7 @@ private final CompositeDisposable mDisposable = new CompositeDisposable();
 /////////////////////////////////////
 private CharSequence mSearchViewHint;
 private CharSequence mDefaultSearchText;
+private boolean showLogo;
 private OnResultListener mOnResultListener;
 private Dialog.OnCancelListener mOnCancelListener;
 private Dialog.OnDismissListener mOnDismissListener;
@@ -92,10 +95,20 @@ private final PublishSubject<String> mQuerySubject = PublishSubject.create();
 
 /////////////////////////////////////
 //
-public static LovSimple create(CharSequence searchViewHint, CharSequence searchText){
+
+public static LovSimple create(CharSequence searchViewHint
+    , CharSequence searchText){
+  return create(searchViewHint, searchText, false);
+}
+
+public static LovSimple create(CharSequence searchViewHint
+    , CharSequence searchText
+    , boolean showLogo){
+
   LovSimple lovSimple = new LovSimple();
   lovSimple.mSearchViewHint = StringUtils.defaultIfBlank(searchViewHint);
   lovSimple.mDefaultSearchText = StringUtils.defaultIfBlank(searchText);
+  lovSimple.showLogo = showLogo;
   return lovSimple;
 }
 
@@ -127,6 +140,7 @@ public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup _
   recyclerView.setLayoutManager(linearLayoutManager);
   recyclerView.setHasFixedSize(true);
   adapter = new LovSimpleAdapter(recyclerView,
+                                 showLogo,
                                  (position, data) -> {
                                    try{
                                      onResult(data);
@@ -182,7 +196,7 @@ public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup _
       .observeOn(AndroidSchedulers.mainThread())
       .map(this::setButtonClearTextVisibilityAndReturnQuery)
       .observeOn(Schedulers.computation())
-      .throttleWithTimeout(600, TimeUnit.MILLISECONDS)
+      .throttleWithTimeout(600, TimeUnit.MILLISECONDS, Schedulers.computation())
       .map(query -> StringUtils.replaceAll(query, "\\s(\\s)+", StringUtils.SPACE))//remove duplicate spaces
       .map(String::trim)
       .distinctUntilChanged()
@@ -245,8 +259,8 @@ private void render(){
           return Observable.just(Lce.<QueryDataKeeper>error(it.getError()));
         }
 
-        if(it.getData() == null){
-          return Observable.just(Lce.<QueryDataKeeper>error(new Error(getString(R.string.lov_simple_no_data1p))));
+        if(CollectionUtils.isEmpty(it.getData())){
+          return Observable.just(Lce.<QueryDataKeeper>error(getString(R.string.lov_simple_no_data1p)));
         }
 
         //filter results base on query
@@ -304,7 +318,7 @@ private void render(){
         }
       })
           .observeOn(AndroidSchedulers.mainThread())
-          .startWith(Lce.loading())
+          //   .startWith(Lce.loading())
           .subscribeWith(new DisposableObserver<Lce<QueryDataKeeper>>(){
             @Override
             public void onNext(Lce<QueryDataKeeper> lce){
@@ -316,7 +330,7 @@ private void render(){
                 tvMessage.setVisibility(View.GONE);
                 showContentLoading(lce.isLoading());
                 if(lce.hasError()){
-                  showError(lce.getError().getMessage());
+                  showError(lce.getError());
                 } else{
                   hideErrors();
                 }
@@ -408,7 +422,7 @@ private void showInternetError(){
 }
 
 @UiThread
-private void showError(String error){
+private void showError(CharSequence error){
   tvMessage.setVisibility(VISIBLE);
   tvMessage.setText(error);
 }
@@ -472,6 +486,9 @@ public void onDestroyView(){
 
 @Override
 public void onDismiss(DialogInterface dialog){
+  searchView.setFocusable(false);
+  searchView.setCursorVisible(false);
+
   if(mOnDismissListener != null){
     mOnDismissListener.onDismiss(dialog);
   }
@@ -508,7 +525,7 @@ public abstract static class Lce<T>{
 
   public abstract boolean hasError();
 
-  public abstract Throwable getError();
+  public abstract CharSequence getError();
 
   public abstract String getQuery();
 
@@ -538,7 +555,7 @@ public abstract static class Lce<T>{
       }
 
       @Override
-      public Throwable getError(){
+      public CharSequence getError(){
         return null;
       }
 
@@ -554,7 +571,7 @@ public abstract static class Lce<T>{
     };
   }
 
-  public static <T> Lce<T> error(final Throwable error){
+  public static <T> Lce<T> error(final CharSequence error){
     return new Lce<T>(){
       @Override
       public boolean isLoading(){
@@ -567,7 +584,7 @@ public abstract static class Lce<T>{
       }
 
       @Override
-      public Throwable getError(){
+      public CharSequence getError(){
         return error;
       }
 
@@ -596,7 +613,7 @@ public abstract static class Lce<T>{
       }
 
       @Override
-      public Throwable getError(){
+      public CharSequence getError(){
         return null;
       }
 
