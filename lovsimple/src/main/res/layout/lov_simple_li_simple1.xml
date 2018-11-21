@@ -11,7 +11,6 @@
   android:clickable="true"
   android:descendantFocusability="blocksDescendants"
   android:focusable="true"
-  android:focusableInTouchMode="true"
   android:foreground="?android:attr/selectableItemBackground"
   android:minHeight="?android:listPreferredItemHeight">
 
