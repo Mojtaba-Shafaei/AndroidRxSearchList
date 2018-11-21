@@ -3,8 +3,6 @@ package com.mojtaba_shafaei.android.lovSimple;
 import static com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions.withCrossFade;
 
 import android.graphics.Typeface;
-import android.os.Build;
-import android.support.v4.view.ViewCompat;
 import android.support.v4.widget.CircularProgressDrawable;
 import android.support.v7.widget.AppCompatImageView;
 import android.support.v7.widget.AppCompatTextView;
@@ -34,11 +32,6 @@ private ListItemSingleRowHolder(View itemView){
   super(itemView);
   ivLogo = itemView.findViewById(R.id.iv_logo);
   tvTitle = itemView.findViewById(R.id.tv_title);
-
-  ViewCompat.setLayoutDirection(tvTitle, ViewCompat.LAYOUT_DIRECTION_RTL);
-  if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1){
-    tvTitle.setTextDirection(View.TEXT_DIRECTION_RTL);
-  }
 }
 
 void setTitle(CharSequence text){
@@ -60,7 +53,7 @@ private void setLogo(boolean showLogo, CharSequence logoUrl){
     } else{
       CircularProgressDrawable progressDrawable = new CircularProgressDrawable(ivLogo.getContext());
       progressDrawable.setStyle(0);
-      progressDrawable.setColorSchemeColors(0xff00ddff, 0xff99cc00, 0xffffbb33, 0xffff4444);
+      progressDrawable.setColorSchemeColors(0xff00ddff, 0xff99cc00, 0xffffbb33);
       progressDrawable.start();
 
       Glide.with(ivLogo.getContext())
@@ -76,21 +69,26 @@ private void setLogo(boolean showLogo, CharSequence logoUrl){
 }
 
 public void fill(boolean showLogo, Item item, String[] queries){
-  if(queries != null && queries.length > 0){
+  if(queries != null && StringUtils.isNoneBlank(item.getDes()) && queries.length > 0){
     SpannableStringBuilder ssb = new SpannableStringBuilder(item.getDes());
     for(String k : queries){
       final int index = StringUtils.indexOfIgnoreCase(item.getDes(), k);
       if(index != -1){
-        ssb.setSpan(
-            new CustomTypefaceSpan("", LovSimple.TYPEFACE_IRANSANS_BOLD),
-            index, index + k.length(),
-            Spannable.SPAN_INCLUSIVE_INCLUSIVE);
+        final int endIndex = index + k.length();
+        if(index != endIndex){
+          ssb.setSpan(new CustomTypefaceSpan("", LovSimple.TYPEFACE_IRANSANS_BOLD), index, endIndex, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+          setTitle(ssb);
+        } else{
+          setTitle(item.getDes());
+        }
+      } else{
+        setTitle(item.getDes());
       }
     }
-    setTitle(ssb);
-    ssb.clear();
+    ssb = null;
+
   } else{
-    setTitle(item.getDes());
+    setTitle(StringUtils.defaultIfBlank(item.getDes()));
   }
 
   if(StringUtils.isBlank(item.getCode())){

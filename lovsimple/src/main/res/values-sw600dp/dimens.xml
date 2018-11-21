@@ -4,4 +4,5 @@
     <dimen name="lov_simple_config_button_height">56dp</dimen>
     <dimen name="lov_simple_height_editText">56dp</dimen>
     <dimen name="lov_simple_height_listItemSingle">56dp</dimen>
+  <dimen name="lov_simple_margin_horizontally">64dp</dimen>
 </resources>
