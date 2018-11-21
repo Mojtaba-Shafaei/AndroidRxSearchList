@@ -54,9 +54,15 @@ static io.reactivex.Observable<Lce<List<Item>>> getList(String query){
       .filter(item -> item.getDes().contains(query))
       .toList()
       .toObservable()
+      .map(data -> {
+        if(query.length() > 0){
+          data.add(0, new Job(null, query, null, Integer.MAX_VALUE));
+        }
+        return data;
+      })
       .map(data -> Lce.data(query, data))
       .map(t -> {
-        SystemClock.sleep(2000);
+        SystemClock.sleep(1500);
         if(query.contentEquals("error")){
           return (Lce.<List<Item>>error("ERROR HAPPENED!!!"));
         }

@@ -2,8 +2,6 @@ package com.mojtaba_shafaei.android.lovSimple;
 
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
-import android.text.Spannable;
-import android.text.SpannableStringBuilder;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -64,24 +62,7 @@ public void onBindViewHolder(@NonNull ListItemSingleRowHolder holder, int positi
     LovSimple.Item item = data.get(holder.getAdapterPosition());
     holder.setTypeface(LovSimple.TYPEFACE_IRANSANS_NORMAL);
 
-    CharSequence title;
-    if(queries != null && queries.length > 0){
-      SpannableStringBuilder ssb = new SpannableStringBuilder(item.getDes());
-      for(String k : queries){
-        final int index = StringUtils.indexOfIgnoreCase(item.getDes(), k);
-        if(index != -1){
-          ssb.setSpan(
-              new CustomTypefaceSpan("", LovSimple.TYPEFACE_IRANSANS_BOLD),
-              index, index + k.length(),
-              Spannable.SPAN_INCLUSIVE_INCLUSIVE);
-        }
-      }
-      title = ssb;
-    } else{
-      title = item.getDes();
-    }
-
-    holder.fill(title, showLogo, item.getLogo());
+    holder.fill(showLogo, item, queries);
 
     holder.itemView.setOnClickListener(
         (View v) -> itemClickListener.onListItemClicked(holder.getAdapterPosition(), item)

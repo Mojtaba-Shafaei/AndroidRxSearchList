@@ -85,7 +85,8 @@ private final CompositeDisposable mDisposable = new CompositeDisposable();
 /////////////////////////////////////
 private CharSequence mSearchViewHint;
 private CharSequence mDefaultSearchText;
-private boolean showLogo;
+private boolean mShowLogo;
+
 private OnResultListener mOnResultListener;
 private Dialog.OnCancelListener mOnCancelListener;
 private Dialog.OnDismissListener mOnDismissListener;
@@ -96,20 +97,31 @@ private final PublishSubject<String> mQuerySubject = PublishSubject.create();
 /////////////////////////////////////
 //
 
-public static LovSimple create(CharSequence searchViewHint
-    , CharSequence searchText){
-  return create(searchViewHint, searchText, false);
-}
-
-public static LovSimple create(CharSequence searchViewHint
-    , CharSequence searchText
-    , boolean showLogo){
+/**
+ * @param searchViewHint CharSequence that shown as EditText's hint.
+ * @param searchText     CharSequence that shown as default query text.
+ * @param showLogo       boolean. if {@code true} force component to show logos in every list item.<br/>  Enter {@code false} to hide logo ImageView.
+ * @return An instance of "LovSimple" component.
+ *
+ * <pre>For example:</pre>
+ * <pre>
+ *   {@code
+ *     LovSimple.create("Enter your desired company name...", "Google", true).show(getSupportFragmentManager());
+ *   }
+ * <pre/>
+ */
+public static LovSimple create(@Nullable CharSequence searchViewHint, @Nullable CharSequence searchText, boolean showLogo){
 
   LovSimple lovSimple = new LovSimple();
   lovSimple.mSearchViewHint = StringUtils.defaultIfBlank(searchViewHint);
   lovSimple.mDefaultSearchText = StringUtils.defaultIfBlank(searchText);
-  lovSimple.showLogo = showLogo;
+  lovSimple.mShowLogo = showLogo;
+
   return lovSimple;
+}
+
+public static LovSimple create(CharSequence searchViewHint, CharSequence searchText){
+  return create(searchViewHint, searchText, false);
 }
 
 /**
@@ -122,7 +134,6 @@ public void show(FragmentManager manager){
 }
 
 /**
- *
  * please use {@link #show(FragmentManager)}
  *
  * @see #show(FragmentManager)
@@ -160,8 +171,14 @@ public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup _
   LinearLayoutManager linearLayoutManager = new LinearLayoutManager(inflater.getContext());
   recyclerView.setLayoutManager(linearLayoutManager);
   recyclerView.setHasFixedSize(true);
+  final int _8dp = getResources().getDimensionPixelSize(R.dimen.lov_simple_list_start_offset);
+  recyclerView.addItemDecoration(new StartOffsetItemDecoration(_8dp));
+  recyclerView.addItemDecoration(new EndOffsetItemDecoration(_8dp));
+  recyclerView.addItemDecoration(new DividerItemDecoration(_8dp, _8dp));
+
+
   adapter = new LovSimpleAdapter(recyclerView,
-                                 showLogo,
+                                 mShowLogo,
                                  (position, data) -> {
                                    try{
                                      onResult(data);
@@ -339,14 +356,15 @@ private void render(){
         }
       })
           .observeOn(AndroidSchedulers.mainThread())
-          //   .startWith(Lce.loading())
           .subscribeWith(new DisposableObserver<Lce<QueryDataKeeper>>(){
             @Override
             public void onNext(Lce<QueryDataKeeper> lce){
               if(isDisposed()){
                 return;
               }
-              Log.d(TAG, "onNext: " + lce.toString());
+              if(BuildConfig.DEBUG){
+                Log.d(TAG, "onNext: " + lce.toString());
+              }
               try{
                 tvMessage.setVisibility(View.GONE);
                 showContentLoading(lce.isLoading());
