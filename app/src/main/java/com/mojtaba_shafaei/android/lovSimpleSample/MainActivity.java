@@ -8,7 +8,7 @@ import com.mojtaba_shafaei.android.lovSimple.LovSimple;
 import com.mojtaba_shafaei.android.lovSimple.LovSimple.Item;
 import io.reactivex.disposables.Disposable;
 
-public class MainActivity extends AppCompatActivity{
+public class MainActivity extends AppCompatActivity {
 
 private String TAG = "MainActivity";
 private TextView textView;
@@ -16,26 +16,26 @@ private TextView textView;
 private Disposable subscribe;
 
 @Override
-protected void onCreate(Bundle savedInstanceState){
-  super.onCreate(savedInstanceState);
-  setContentView(R.layout.activity_main);
+protected void onCreate(Bundle savedInstanceState) {
+super.onCreate(savedInstanceState);
+setContentView(R.layout.activity_main);
 
-  LovSimple lovSimple = LovSimple.create("جستجو", "job", true)
-      .setOnResultListener(this::displayItem)
-      .setOnCancelListener(dialog -> Log.d(TAG, "cancelled: "))
-      .setOnDismissListener(dialog -> Log.d(TAG, "dismissed: "));
+LovSimple lovSimple = LovSimple.create("جستجو", "job", true)
+                        .setOnCancelListener(dialog -> Log.d(TAG, "cancelled: "))
+                        .setOnDismissListener(dialog -> Log.d(TAG, "dismissed: "));
 
-  subscribe = lovSimple.getQueryIntent()
-      .flatMap(DataMocker::getList)
-      .subscribe(lovSimple::setState);
+subscribe = lovSimple.getQueryIntent()
+              .flatMap(DataMocker::getList)
+              .subscribe(lovSimple::setState);
 
-  //test for online API
+//test for online API
 
-  findViewById(R.id.button).setOnClickListener(view -> {
-    lovSimple.show(getSupportFragmentManager());
-  });
+findViewById(R.id.button).setOnClickListener(view -> {
+lovSimple.setOnResultListener(this::displayItem);
+lovSimple.show(getSupportFragmentManager());
+});
 
-  //test for offline
+//test for offline
 
   /*findViewById(R.id.button)
       .setOnClickListener(view -> {
@@ -47,25 +47,24 @@ protected void onCreate(Bundle savedInstanceState){
             .subscribe(lovSimple::setState);
       });
 */
-  textView = findViewById(R.id.tvResult);
+textView = findViewById(R.id.tvResult);
 }
 
-private void displayItem(Item item){
-  if(item != null){
-    Log.d(TAG, "displayItem : " + item.getDes());
+private void displayItem(Item item) {
+if (item != null) {
+Log.d(TAG, "displayItem : " + item.getDes());
 
-    Job job = (Job) item;
-    textView.setText(job.toString());
-  } else{
-    Log.d(TAG, "displayItem : JUST returned");
-  }
+textView.setText(String.format("%s%s", item.getCode(), item.getDes()));
+} else {
+Log.d(TAG, "displayItem : JUST returned");
+}
 }
 
 @Override
-protected void onDestroy(){
-  if(subscribe != null){
-    subscribe.dispose();
-  }
-  super.onDestroy();
+protected void onDestroy() {
+if (subscribe != null) {
+subscribe.dispose();
+}
+super.onDestroy();
 }
 }

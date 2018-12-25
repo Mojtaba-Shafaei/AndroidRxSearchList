@@ -1,6 +1,6 @@
 <resources>
-    <string name="lov_simple_app_name">LovSimple</string>
-    <string name="lov_simple_action_search">جستجو</string>
-    <string name="lov_simple_no_data1p">لیست مقادیر فاقد مقدار است.</string>
-    <string name="lov_simple_no_internet_connection" translatable="false">ارتباط با اینترنت قطع میباشد</string>
+  <string name="lov_simple_app_name">LovSimple</string>
+  <string name="lov_simple_action_search">Search</string>
+  <string name="lov_simple_no_data1p">لیست مقادیر فاقد مقدار است.</string>
+  <string name="lov_simple_no_internet_connection" translatable="false">ارتباط با اینترنت قطع میباشد</string>
 </resources>

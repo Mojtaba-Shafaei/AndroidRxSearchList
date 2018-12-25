@@ -49,7 +49,7 @@
           tools:src="@drawable/lov_simple_ic_arrow_back_grey_600_24dp"
           tools:translationX="0dp"/>
 
-        <android.support.v7.widget.AppCompatEditText
+        <android.support.v7.widget.AppCompatAutoCompleteTextView
           android:id="@+id/lov_simple_search_view"
           style="@style/Widget.MaterialComponents.TextInputEditText.OutlinedBox.Dense"
           android:layout_width="0dp"
@@ -57,9 +57,11 @@
           android:background="@android:color/transparent"
           android:gravity="start|center_vertical"
           android:hint="@string/lov_simple_action_search"
-          android:imeOptions="actionNone|flagNoExtractUi"
+          android:imeOptions="actionSearch|flagNoExtractUi"
+          android:completionThreshold="0"
           android:inputType="text|textNoSuggestions"
           android:lines="1"
+          android:textAlignment="textStart"
           app:layout_constraintBottom_toBottomOf="parent"
           app:layout_constraintLeft_toRightOf="@id/lov_simple_btn_clear_search"
           app:layout_constraintRight_toLeftOf="@id/lov_simple_btn_back"
