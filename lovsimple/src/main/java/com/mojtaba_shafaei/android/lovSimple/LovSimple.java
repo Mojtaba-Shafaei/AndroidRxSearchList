@@ -95,6 +95,7 @@ private final CompositeDisposable mDisposable = new CompositeDisposable();
 private CharSequence mSearchViewHint;
 private CharSequence mDefaultSearchText;
 private boolean mShowLogo;
+private String mSearchHistoryUniquer;
 
 private OnResultListener mOnResultListener;
 private Dialog.OnCancelListener mOnCancelListener;
@@ -109,6 +110,7 @@ private final PublishSubject<String> mQuerySubject = PublishSubject.create();
 /**
  * @param searchViewHint CharSequence that shown as EditText's hint.
  * @param searchText CharSequence that shown as default query text.
+ * @param searchHistoryUniquer String, used to filter search history for every usage.
  * @param showLogo boolean. if {@code true} force component to show logos in every list item.<br/>  Enter {@code false}
  * to hide logo ImageView.
  * @return An instance of "LovSimple" component.
@@ -121,18 +123,21 @@ private final PublishSubject<String> mQuerySubject = PublishSubject.create();
  * <pre/>
  */
 public static LovSimple create(@Nullable CharSequence searchViewHint, @Nullable CharSequence searchText,
+  @NonNull String searchHistoryUniquer,
   boolean showLogo) {
 
 LovSimple lovSimple = new LovSimple();
 lovSimple.mSearchViewHint = StringUtils.defaultIfBlank(searchViewHint);
 lovSimple.mDefaultSearchText = StringUtils.defaultIfBlank(searchText);
 lovSimple.mShowLogo = showLogo;
+lovSimple.mSearchHistoryUniquer = searchHistoryUniquer;
 
 return lovSimple;
 }
 
-public static LovSimple create(CharSequence searchViewHint, CharSequence searchText) {
-return create(searchViewHint, searchText, false);
+public static LovSimple create(CharSequence searchViewHint, CharSequence searchText,
+  @NonNull String searchHistoryUniquer) {
+return create(searchViewHint, searchText, searchHistoryUniquer, false);
 }
 
 /**
@@ -706,7 +711,7 @@ private void saveSearchHistory() {
 if (getContext() == null || history == null) {
 return;
 }
-SharedPreferences settings = getContext().getSharedPreferences(SHARE_PREF_KEY, 0);
+SharedPreferences settings = getContext().getSharedPreferences(getSharePrefKey(), 0);
 SharedPreferences.Editor editor = settings.edit();
 editor.putStringSet(SHARE_PREF_SEARCH_KEY, history);
 editor.apply();
@@ -716,12 +721,17 @@ editor.apply();
 private Set<String> getSearchHistory() {
 history = new HashSet<>(0);
 
-SharedPreferences settings = getContext().getSharedPreferences(SHARE_PREF_KEY, 0);
+SharedPreferences settings = getContext().getSharedPreferences(getSharePrefKey(), 0);
 final Set<String> lvSet = settings.getStringSet(SHARE_PREF_SEARCH_KEY, null);
 
 if (lvSet != null) {
 history.addAll(lvSet);
 }
 return history;
+}
+
+@NonNull
+private String getSharePrefKey() {
+return SHARE_PREF_KEY + mSearchHistoryUniquer;
 }
 }
