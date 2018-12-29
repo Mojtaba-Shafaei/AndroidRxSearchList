@@ -61,7 +61,7 @@ return Observable.fromIterable(items)
          })
          .map(data -> Lce.<List<? extends Item>>data(query, data))
          .map(t -> {
-         SystemClock.sleep(1500);
+         SystemClock.sleep(500);
          if (query.contentEquals("error")) {
          return (Lce.<List<? extends Item>>error("ERROR HAPPENED!!!"));
          }

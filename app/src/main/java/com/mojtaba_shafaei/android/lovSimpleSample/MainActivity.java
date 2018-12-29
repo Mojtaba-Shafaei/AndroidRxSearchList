@@ -20,13 +20,13 @@ protected void onCreate(Bundle savedInstanceState) {
 super.onCreate(savedInstanceState);
 setContentView(R.layout.activity_main);
 
-LovSimple lovSimple = LovSimple.create("جستجو", "job", true)
+LovSimple lovSimple = LovSimple.create("جستجو", "job", "", false, false)
                         .setOnCancelListener(dialog -> Log.d(TAG, "cancelled: "))
                         .setOnDismissListener(dialog -> Log.d(TAG, "dismissed: "));
 
 subscribe = lovSimple.getQueryIntent()
-              .flatMap(DataMocker::getList)
-              .subscribe(lovSimple::setState);
+              .switchMap(DataMocker::getList)
+              .subscribe(t->lovSimple.setState(t));
 
 //test for online API
 

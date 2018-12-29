@@ -63,6 +63,7 @@ private final String SHARE_PREF_KEY = "LOV_SHARE_PREF";
 private final String SHARE_PREF_SEARCH_KEY = "searches_history";
 private HashSet<String> history;
 private ArrayAdapter<String> mSearchAdapter;
+private boolean mShowHistory;
 
 public interface Item {
 
@@ -122,22 +123,26 @@ private final PublishSubject<String> mQuerySubject = PublishSubject.create();
  *   }
  * <pre/>
  */
-public static LovSimple create(@Nullable CharSequence searchViewHint, @Nullable CharSequence searchText,
-  @NonNull String searchHistoryUniquer,
-  boolean showLogo) {
+public static LovSimple create(@Nullable CharSequence searchViewHint
+  , @Nullable CharSequence searchText
+  , @NonNull String searchHistoryUniquer
+  , boolean showLogo
+  , boolean showHistory) {
 
 LovSimple lovSimple = new LovSimple();
 lovSimple.mSearchViewHint = StringUtils.defaultIfBlank(searchViewHint);
 lovSimple.mDefaultSearchText = StringUtils.defaultIfBlank(searchText);
 lovSimple.mShowLogo = showLogo;
 lovSimple.mSearchHistoryUniquer = searchHistoryUniquer;
+lovSimple.mShowHistory = showHistory;
 
 return lovSimple;
 }
 
-public static LovSimple create(CharSequence searchViewHint, CharSequence searchText,
-  @NonNull String searchHistoryUniquer) {
-return create(searchViewHint, searchText, searchHistoryUniquer, false);
+public static LovSimple create(CharSequence searchViewHint
+  , CharSequence searchText
+  , @NonNull String searchHistoryUniquer) {
+return create(searchViewHint, searchText, searchHistoryUniquer, false, false);
 }
 
 /**
@@ -244,26 +249,28 @@ btnBack.getViewTreeObserver()
 
 btnClearText.setOnClickListener(v -> searchView.setText(""));
 
-RxTextView.afterTextChangeEvents(searchView)
-  .observeOn(AndroidSchedulers.mainThread())
-  .map(this::setButtonClearTextVisibilityAndReturnQuery)
-  .observeOn(Schedulers.computation())
-  .throttleWithTimeout(600, TimeUnit.MILLISECONDS, Schedulers.computation())
-  .map(query -> StringUtils.replaceAll(query, "\\s(\\s)+", StringUtils.SPACE))//remove duplicate spaces
-  .map(String::trim)
-  .distinctUntilChanged()
-  .map(query -> {
-  addHistory(query);
-  return query;
-  })
-  .onErrorReturnItem("")
-  .subscribe(mQuerySubject)
+mDisposable.add(
+  RxTextView.afterTextChangeEvents(searchView)
+    .observeOn(AndroidSchedulers.mainThread())
+    .map(this::setButtonClearTextVisibilityAndReturnQuery)
+    .observeOn(Schedulers.computation())
+    .throttleWithTimeout(600, TimeUnit.MILLISECONDS, Schedulers.computation())
+    .map(query -> StringUtils.replaceAll(query, "\\s(\\s)+", StringUtils.SPACE))//remove duplicate spaces
+    .map(String::trim)
+    .distinctUntilChanged()
+    .map(query -> {
+    addHistory(query);
+    return query;
+    })
+    .onErrorReturnItem("")
+    .subscribe(mQuerySubject::onNext)
+)
 ;
 return view;
 }
 
 private void addHistory(String query) {
-if (StringUtils.isNotBlank(query)) {
+if (StringUtils.isNotBlank(query) && mShowHistory) {
 history.add(query);
 }
 }
@@ -274,10 +281,12 @@ super.onActivityCreated(savedInstanceState);
 btnBack.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.lov_simple_ic_arrow_back_grey_600_24dp));
 btnClearText.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.lov_simple_ic_close_grey_600_24dp));
 
+if (mShowHistory) {
 mSearchAdapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_dropdown_item_1line,
   getSearchHistory().toArray(new String[0]));
 searchView.setAdapter(mSearchAdapter);
 mSearchAdapter.notifyDataSetChanged();
+}
 }
 
 private void onResult(Item data) {
@@ -303,7 +312,7 @@ searchView.setSelected(false);
 }
 
 public Observable<String> getQueryIntent() {
-return mQuerySubject.subscribeOn(Schedulers.io());
+return mQuerySubject;
 }
 
 @Override
@@ -426,7 +435,6 @@ mDisposable.add(
 
     @Override
     public void onError(Throwable e) {
-    Log.e(TAG, "onError() called with: e = [" + e + "],isDisposed() = [" + isDisposed() + "]");
     if (isDisposed()) {
     return;
     }
@@ -711,10 +719,12 @@ private void saveSearchHistory() {
 if (getContext() == null || history == null) {
 return;
 }
+if (mShowHistory) {
 SharedPreferences settings = getContext().getSharedPreferences(getSharePrefKey(), 0);
 SharedPreferences.Editor editor = settings.edit();
 editor.putStringSet(SHARE_PREF_SEARCH_KEY, history);
 editor.apply();
+}
 }
 
 @NonNull

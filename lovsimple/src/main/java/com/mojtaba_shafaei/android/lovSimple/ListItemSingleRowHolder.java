@@ -92,6 +92,7 @@ public void fill(boolean showLogo, Item item, String[] queries){
   }
 
   if(StringUtils.isBlank(item.getCode())){
+    ivLogo.setVisibility(View.VISIBLE);
     ivLogo.setImageResource(R.drawable.lov_simple_ic_subdirectory_arrow_left_teal_400_24dp);
   } else{
     setLogo(showLogo, item.getLogo());
