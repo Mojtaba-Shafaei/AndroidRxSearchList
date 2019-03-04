@@ -1,4 +1,4 @@
-package com.mojtaba_shafaei.android.lovSimpleSample;
+package com.mojtaba_shafaei.android.androidRxSearchListSample;
 
 import android.os.Bundle;
 import android.util.Log;

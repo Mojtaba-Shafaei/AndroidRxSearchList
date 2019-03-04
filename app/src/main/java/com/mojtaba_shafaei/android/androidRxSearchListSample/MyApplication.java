@@ -1,4 +1,4 @@
-package com.mojtaba_shafaei.android.lovSimpleSample;
+package com.mojtaba_shafaei.android.androidRxSearchListSample;
 
 import androidx.multidex.MultiDex;
 import androidx.multidex.MultiDexApplication;

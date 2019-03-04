@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-  package="com.mojtaba_shafaei.android.lovSimpleSample">
+  package="com.mojtaba_shafaei.android.androidRxSearchListSample">
 
   <application
     android:allowBackup="false"
     android:icon="@mipmap/ic_launcher"
     android:label="@string/rx_search_list_app_name"
-    android:name=".MyApplication"
+    android:name="com.mojtaba_shafaei.android.androidRxSearchListSample.MyApplication"
     android:roundIcon="@mipmap/ic_launcher_round"
     android:supportsRtl="true"
     android:theme="@style/rx_search_list_AppTheme">
     <activity
-      android:name="com.mojtaba_shafaei.android.lovSimpleSample.MainActivity"
+      android:name="com.mojtaba_shafaei.android.androidRxSearchListSample.MainActivity"
       android:theme="@style/Theme.AppCompat.Light.NoActionBar">
       <intent-filter>
         <action android:name="android.intent.action.MAIN"/>
