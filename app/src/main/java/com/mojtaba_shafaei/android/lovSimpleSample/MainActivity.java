@@ -1,70 +1,106 @@
 package com.mojtaba_shafaei.android.lovSimpleSample;
 
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.Switch;
 import android.widget.TextView;
-import com.mojtaba_shafaei.android.lovSimple.LovSimple;
-import com.mojtaba_shafaei.android.lovSimple.LovSimple.Item;
-import io.reactivex.disposables.Disposable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.ViewCompat;
+import com.jakewharton.rxbinding2.view.RxView;
+import com.mojtaba_shafaei.android.rxSearchList.RxSearchList;
+import com.mojtaba_shafaei.android.rxSearchList.RxSearchList.Item;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.schedulers.Schedulers;
 
 public class MainActivity extends AppCompatActivity {
 
-private String TAG = "MainActivity";
-private TextView textView;
+  private String TAG = "MainActivity";
+  private TextView tvResult;
+  private TextView tvCancelled;
+  private TextView tvDismissed;
 
-private Disposable subscribe;
+  private final CompositeDisposable mDisposables = new CompositeDisposable();
 
-@Override
-protected void onCreate(Bundle savedInstanceState) {
-super.onCreate(savedInstanceState);
-setContentView(R.layout.activity_main);
+  ////////////////////////////      /////////////////////////////////////
 
-LovSimple lovSimple = LovSimple.create("جستجو", "job", "", false, false)
-                        .setOnCancelListener(dialog -> Log.d(TAG, "cancelled: "))
-                        .setOnDismissListener(dialog -> Log.d(TAG, "dismissed: "));
+  @Override
+  protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    setContentView(R.layout.activity_main);
+    View rootView = findViewById(R.id.root);
+    Button btnShowList = findViewById(R.id.button);
+    Switch swShowLogo = findViewById(R.id.sw_showLogo);
 
-subscribe = lovSimple.getQueryIntent()
-              .switchMap(DataMocker::getList)
-              .subscribe(t->lovSimple.setState(t));
+    tvResult = findViewById(R.id.tvResult);
+    tvCancelled = findViewById(R.id.tvCancelled);
+    tvDismissed = findViewById(R.id.tvDismissed);
 
-//test for online API
+    ViewCompat.setLayoutDirection(rootView, ViewCompat.LAYOUT_DIRECTION_RTL);
+    RxSearchList rxSearchList = RxSearchList.create("Search", "job"
+        , false
+        , null);
 
-findViewById(R.id.button).setOnClickListener(view -> {
-lovSimple.setOnResultListener(this::displayItem);
-lovSimple.show(getSupportFragmentManager());
-});
+    mDisposables.add(
+        RxView.clicks(btnShowList)
+            .map(t -> clearAllText())
+            .map(t -> rxSearchList.setShowLogo(swShowLogo.isChecked())
+                .show(getSupportFragmentManager())
+            )
+            .switchMap(RxSearchList::getQueryIntent)
+            .switchMap(DataMocker::getList)
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(rxSearchList::setState)
+    );
 
-//test for offline
-
-  /*findViewById(R.id.button)
-      .setOnClickListener(view -> {
-        lovSimple.show(getSupportFragmentManager(), "");
-        //test for offline
-        subscribe = DataMocker.getList()
+    mDisposables.add(
+        rxSearchList.results()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(lovSimple::setState);
-      });
-*/
-textView = findViewById(R.id.tvResult);
-}
+            .subscribe(this::displayItem)
+    );
 
-private void displayItem(Item item) {
-if (item != null) {
-Log.d(TAG, "displayItem : " + item.getDes());
+    mDisposables.add(
+        rxSearchList.onCancel()
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(t -> tvCancelled.setText(getString(R.string.cancelled)))
+    );
 
-textView.setText(String.format("%s%s", item.getCode(), item.getDes()));
-} else {
-Log.d(TAG, "displayItem : JUST returned");
-}
-}
+    mDisposables.add(
+        rxSearchList.onDismiss()
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(t -> tvDismissed.setText(getString(R.string.dismissed)))
+    );
 
-@Override
-protected void onDestroy() {
-if (subscribe != null) {
-subscribe.dispose();
-}
-super.onDestroy();
-}
+  }
+
+  /**
+   * @return value does not matter. just DON'T return null.
+   */
+  private Object clearAllText() {
+    tvResult.setText("");
+    tvCancelled.setText("");
+    tvDismissed.setText("");
+    return true;
+  }
+
+  private void displayItem(Item item) {
+    if (item != null) {
+      Log.d(TAG, "displayItem : " + item.getDes());
+
+      tvResult.setText(String.format("%s%s", item.getCode(), item.getDes()));
+    } else {
+      Log.d(TAG, "displayItem : JUST returned");
+    }
+  }
+
+  @Override
+  protected void onPause() {
+    mDisposables.clear();
+    super.onPause();
+  }
 }

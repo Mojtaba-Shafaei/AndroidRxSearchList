@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="rx_search_list_blue_grey50">#FFECEFF1</color>
+    <color name="rx_search_list_Color_White">#FFFFFFFF</color>
+    <color name="rx_search_list_transparent_white_hex_22">#22ffffff</color>
+    <color name="rx_search_list_color_flat_button_disabled">#0FFF</color>
+    <color name="rx_search_list_Color_Transparent">#00FFFFFF</color>
+    <color name="rx_search_list_grey_percent_62">#9E9E9E</color>
+    <color name="rx_search_list_primaryTextDark">#212121</color>
+    <color name="rx_search_list_disabledAndHintTextLight">#808080</color>
+    <color name="rx_search_list_textColor_flat_button_light_disabled">#BDBDBD</color>
+    <color name="rx_search_list_textColor_flat_button_light">#212121</color>
+
+    <color name="rx_search_list_secondaryTextDark">#757575</color>
+    <color name="rx_search_list_disabledAndHintTextDark">#9E9E9E</color>
+    <color name="rx_search_list_colorBackground">@color/rx_search_list_blue_grey50</color>
+    <color name="rx_search_list_secondaryTextLight">#B3B3B3</color>
+    <color name="rx_search_list_textInput_error_color_light">#D32F2F</color>
+    <color name="rx_search_list_colorAccent">#039BE5</color>
+</resources>

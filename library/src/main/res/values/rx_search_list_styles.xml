@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+  <style name="rx_search_list_AppTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
+    <item name="android:windowBackground">@color/rx_search_list_blue_grey50</item>
+    <item name="android:windowAnimationStyle">@style/rx_search_list_ActivityAnimation</item>
+
+  </style>
+
+  <style name="rx_search_list_ActivityAnimation">
+    <item name="android:activityOpenEnterAnimation">@anim/rx_search_list_anim_slide_in_right</item>
+    <item name="android:activityOpenExitAnimation">@anim/rx_search_list_anim_slide_out_left</item>
+    <item name="android:activityCloseEnterAnimation">@anim/rx_search_list_anim_slide_in_left</item>
+    <item name="android:activityCloseExitAnimation">@anim/rx_search_list_anim_slide_out_right</item>
+  </style>
+</resources>

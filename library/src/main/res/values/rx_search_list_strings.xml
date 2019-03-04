@@ -1,0 +1,7 @@
+<resources>
+  <string name="rx_search_list_app_name">LovSimple</string>
+  <string name="rx_search_list_action_search">Search</string>
+  <string name="rx_search_list_list_is_empty">List is empty</string>
+  <string name="rx_search_list_unknown_error">Unknown Error Happened.</string>
+
+</resources>

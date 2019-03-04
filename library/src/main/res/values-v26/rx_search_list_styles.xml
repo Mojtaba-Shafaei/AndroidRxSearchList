@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+  <style name="rx_search_list_AppTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
+    <item name="android:windowContentTransitions">true</item>
+    <item name="android:editTextStyle">@style/rx_search_list_App_EditTextStyle</item>
+    <item name="editTextStyle">@style/rx_search_list_App_EditTextStyle</item>
+
+    <item name="android:windowAnimationStyle">@style/rx_search_list_ActivityAnimation</item>
+  </style>
+
+  <style name="rx_search_list_App_EditTextStyle" parent="Widget.AppCompat.EditText">
+    <item name="android:importantForAutofill">noExcludeDescendants</item>
+  </style>
+
+</resources>

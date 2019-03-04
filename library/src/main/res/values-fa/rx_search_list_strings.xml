@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="rx_search_list_app_name">LovSimple</string>
+  <string name="rx_search_list_action_search">جستجو</string>
+  <string name="rx_search_list_list_is_empty">لیست مقادیر فاقد مقدار است.</string>
+  <string name="rx_search_list_unknown_error">خطایی نامشخص اتفاق افتاد</string>
+
+</resources>

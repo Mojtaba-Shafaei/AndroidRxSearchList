@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <integer name="lov_simple_config_debounce_duration">300</integer>
-    <integer name="lov_simple_config_throttle_duration">600</integer>
-</resources>

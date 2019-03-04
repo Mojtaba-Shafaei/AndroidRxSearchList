@@ -1,52 +1,39 @@
 package com.mojtaba_shafaei.android.lovSimpleSample;
 
-import com.mojtaba_shafaei.android.lovSimple.LovSimple;
+import com.mojtaba_shafaei.android.rxSearchList.RxSearchList.Item;
 
-class Job implements LovSimple.Item{
+class Job implements Item {
 
-String code;
-String des;
-transient CharSequence logo;
-transient int priority;
+  String code;
+  String des;
+  String logo;
 
-Job(String code, String des, CharSequence logo, int priority){
-  this.code = code;
-  this.des = des;
-  this.logo = logo;
-  this.priority = priority;
-}
+  Job(String code, String des, String logo) {
+    this.code = code;
+    this.des = des;
+    this.logo = logo;
+  }
 
-@Override
-public String getCode(){
-  return code;
-}
+  @Override
+  public String getCode() {
+    return code;
+  }
 
-@Override
-public String getDes(){
-  return des;
-}
+  @Override
+  public String getDes() {
+    return des;
+  }
 
-@Override
-public int getPriority(){
-  return priority;
-}
+  @Override
+  public String getLogo() {
+    return logo;
+  }
 
-@Override
-public CharSequence getLogo(){
-  return logo;
-}
-
-@Override
-public void setPriority(int priority){
-  this.priority = priority;
-}
-
-@Override
-public String toString(){
-  return "Job{" +
-      "code='" + code + '\'' +
-      ", des='" + des + '\'' +
-      ", priority=" + priority +
-      '}';
-}
+  @Override
+  public String toString() {
+    return "Job{" +
+        "code='" + code + '\'' +
+        ", des='" + des + '\'' +
+        '}';
+  }
 }

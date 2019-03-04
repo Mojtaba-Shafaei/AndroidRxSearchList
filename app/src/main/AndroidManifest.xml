@@ -5,12 +5,14 @@
   <application
     android:allowBackup="false"
     android:icon="@mipmap/ic_launcher"
-    android:label="@string/lov_simple_app_name"
+    android:label="@string/rx_search_list_app_name"
     android:name=".MyApplication"
     android:roundIcon="@mipmap/ic_launcher_round"
     android:supportsRtl="true"
-    android:theme="@style/lov_simple_AppTheme">
-    <activity android:name="com.mojtaba_shafaei.android.lovSimpleSample.MainActivity">
+    android:theme="@style/rx_search_list_AppTheme">
+    <activity
+      android:name="com.mojtaba_shafaei.android.lovSimpleSample.MainActivity"
+      android:theme="@style/Theme.AppCompat.Light.NoActionBar">
       <intent-filter>
         <action android:name="android.intent.action.MAIN"/>
 

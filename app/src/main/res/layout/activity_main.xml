@@ -1,24 +1,85 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  android:id="@+id/root"
   android:layout_width="match_parent"
   android:layout_height="match_parent"
+  android:paddingTop="8dp"
+  android:paddingLeft="40dp"
+  android:paddingRight="40dp"
+  android:gravity="center_horizontal"
   android:orientation="vertical">
+
+  <Switch
+    android:id="@+id/sw_showLogo"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:padding="16dp"
+    android:drawablePadding="16dp"
+    android:text="WITH LOGO"/>
 
   <Button
     android:id="@+id/button"
-    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:text="Button"
+    android:layout_width="match_parent"
+    android:layout_height="48dp"
+    android:text="@string/show_list"
     android:textColor="@color/colorPrimary"
     />
 
   <TextView
-    android:id="@+id/tvResult"
-    android:layout_width="wrap_content"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:text="Hello World!"
-    android:textColor="@color/colorPrimary"/>
+    android:layout_marginTop="16dp"
+    android:gravity="center"
+    android:minWidth="100dp"
+    android:text="Selected Item:"
+    />
+  <TextView
+    android:id="@+id/tvResult"
+    android:layout_width="match_parent"
+    android:layout_height="48dp"
+    android:background="@color/colorPrimary"
+    android:gravity="center"
+    android:minWidth="100dp"
+    android:text=""
+    android:textColor="@android:color/white"/>
+
+
+  <TextView
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="16dp"
+    android:gravity="center"
+    android:minWidth="100dp"
+    android:text="Cancelled Status"
+    />
+  <TextView
+    android:id="@+id/tvCancelled"
+    android:layout_width="match_parent"
+    android:layout_height="48dp"
+    android:background="@color/colorPrimaryDark"
+    android:gravity="center"
+    android:minWidth="100dp"
+    android:text=""
+    android:textColor="@android:color/white"/>
+
+
+  <TextView
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="16dp"
+    android:gravity="center"
+    android:minWidth="100dp"
+    android:text="Dismissed Status"
+    />
+  <TextView
+    android:id="@+id/tvDismissed"
+    android:layout_width="match_parent"
+    android:layout_height="48dp"
+    android:background="@color/colorAccent"
+    android:gravity="center"
+    android:minWidth="100dp"
+    android:text=""
+    android:textColor="@android:color/white"/>
 
 
 </LinearLayout>

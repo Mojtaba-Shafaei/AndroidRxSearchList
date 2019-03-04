@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="match_parent"
+  android:layout_height="wrap_content"
+  android:paddingTop="4dp"
+  android:paddingBottom="4dp"
+  android:paddingLeft="@dimen/rx_search_list_margin_horizontally"
+  android:paddingRight="@dimen/rx_search_list_margin_horizontally"
+  android:background="@drawable/rx_search_list_item_background"
+  android:clickable="true"
+  android:descendantFocusability="blocksDescendants"
+  android:focusable="true"
+  android:minHeight="?android:listPreferredItemHeight">
+
+  <androidx.appcompat.widget.AppCompatImageView
+    android:id="@+id/iv_logo"
+    android:layout_width="@dimen/rx_search_list_logo_size"
+    android:layout_height="@dimen/rx_search_list_logo_size"
+    android:scaleType="centerInside"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toTopOf="parent"
+    tools:src="@tools:sample/avatars"
+    tools:visibility="visible"/>
+
+  <androidx.appcompat.widget.AppCompatTextView
+    android:id="@+id/tv_title"
+    style="@style/TextAppearance.AppCompat.Medium"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="@dimen/rx_search_list_list_item_margin_start"
+    android:layout_marginLeft="@dimen/rx_search_list_list_item_margin_start"
+    android:clickable="false"
+    android:ellipsize="end"
+    android:focusable="false"
+    android:focusableInTouchMode="false"
+    android:gravity="start|center_vertical"
+    android:lineSpacingMultiplier="1.2"
+    android:maxLines="2"
+    android:textAlignment="viewStart"
+    android:textIsSelectable="false"
+    app:layout_constraintBottom_toBottomOf="@id/iv_logo"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toEndOf="@id/iv_logo"
+    app:layout_constraintTop_toTopOf="@id/iv_logo"
+    app:layout_goneMarginStart="0dp"
+    tools:text="@tools:sample/lorem"/>
+</androidx.constraintlayout.widget.ConstraintLayout>

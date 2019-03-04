@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:id="@+id/rx_search_list_root"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:background="@color/rx_search_list_blue_grey50">
+
+  <androidx.cardview.widget.CardView
+    android:id="@+id/rx_search_list_card_appBar"
+    style="@style/Widget.MaterialComponents.CardView"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="8dp"
+    android:layout_marginLeft="@dimen/rx_search_list_margin_horizontally"
+    android:layout_marginRight="@dimen/rx_search_list_margin_horizontally"
+    app:cardBackgroundColor="#FFF"
+    app:cardCornerRadius="@dimen/rx_search_list_cardCornerRadius"
+    app:cardElevation="4dp"
+    app:cardPreventCornerOverlap="true"
+    app:cardUseCompatPadding="true"
+    app:layout_constraintLeft_toLeftOf="parent"
+    app:layout_constraintRight_toRightOf="parent"
+    app:layout_constraintTop_toTopOf="parent">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:paddingStart="4dp"
+      android:paddingEnd="4dp">
+
+      <androidx.appcompat.widget.AppCompatImageButton
+        android:id="@+id/rx_search_list_btn_back"
+        android:layout_width="@dimen/rx_search_list_config_button_height"
+        android:layout_height="@dimen/rx_search_list_config_button_height"
+        android:background="@drawable/rx_search_list_bgs_flat_button_transparent_oval"
+        android:scaleType="centerInside"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:src="@drawable/rx_search_list_ic_arrow_back_grey_600_24dp"
+        tools:translationX="0dp"/>
+
+      <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/rx_search_list_search_view"
+        style="@style/Widget.MaterialComponents.TextInputEditText.OutlinedBox.Dense"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        android:completionThreshold="0"
+        android:gravity="start|center_vertical"
+        android:hint="@string/rx_search_list_action_search"
+        android:imeOptions="actionSearch|flagNoExtractUi"
+        android:inputType="text|textNoSuggestions"
+        android:lines="1"
+        android:textAlignment="textStart"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/rx_search_list_btn_clear_search"
+        app:layout_constraintStart_toEndOf="@id/rx_search_list_btn_back"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+      <androidx.appcompat.widget.AppCompatImageButton
+        android:id="@+id/rx_search_list_btn_clear_search"
+        android:layout_width="@dimen/rx_search_list_config_button_height"
+        android:layout_height="@dimen/rx_search_list_config_button_height"
+        android:background="@drawable/rx_search_list_bgs_flat_button_transparent_oval"
+        android:scaleType="centerInside"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:src="@drawable/rx_search_list_ic_close_grey_600_24dp"/>
+
+      <androidx.core.widget.ContentLoadingProgressBar
+        android:id="@+id/rx_search_list_progressBar"
+        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@android:color/white"
+        android:indeterminate="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+  </androidx.cardview.widget.CardView>
+
+  <FrameLayout
+    android:layout_width="0dp"
+    android:layout_height="0dp"
+    android:layout_marginTop="-10dp"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintLeft_toLeftOf="parent"
+    app:layout_constraintRight_toRightOf="parent"
+    app:layout_constraintTop_toBottomOf="@id/rx_search_list_card_appBar">
+
+    <androidx.recyclerview.widget.RecyclerView
+      android:id="@+id/rx_search_list_list"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      tools:listitems="@@layout/rx_search_list_li_simple1"/>
+
+    <androidx.appcompat.widget.AppCompatTextView
+      android:id="@+id/rx_search_list_tv_message"
+      style="@style/TextAppearance.AppCompat.Small"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="16dp"
+      android:layout_gravity="center_horizontal|top"
+      android:paddingTop="4dp"
+      android:paddingBottom="4dp"
+      android:paddingLeft="16dp"
+      android:paddingRight="16dp"
+      android:background="@drawable/rx_search_list_bg_toast"
+      android:gravity="center"
+      android:minHeight="40dp"
+      android:translationZ="2dp"
+      android:elevation="2dp"
+      android:textColor="#B94A48"
+      android:visibility="gone"
+      tools:text="@tools:sample/lorem"
+      tools:visibility="visible"
+      tools:targetApi="lollipop"/>
+  </FrameLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

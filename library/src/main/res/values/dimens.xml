@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <dimen name="rx_search_list_list_item_margin_start">24dp</dimen>
+  <dimen name="rx_search_list_logo_size">48dp</dimen>
+  <dimen name="rx_search_list_48_dp">48dp</dimen>
+</resources>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <dimen name="rx_search_list_config_toolbar_height">56dp</dimen>
+  <dimen name="rx_search_list_cardCornerRadius">4dp</dimen>
+  <dimen name="rx_search_list_config_button_height">40dp</dimen>
+  <dimen name="rx_search_list_height_editText">48dp</dimen>
+  <dimen name="rx_search_list_height_listItemSingle">48dp</dimen>
+
+  <dimen name="rx_search_list_margin_horizontally">16dp</dimen>
+
+  <dimen name="rx_search_list_list_offset">8dp</dimen>
+  <dimen name="rx_search_list_list_divider">4dp</dimen>
+
+
+</resources>

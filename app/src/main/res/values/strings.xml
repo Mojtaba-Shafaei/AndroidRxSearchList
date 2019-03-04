@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">LovSimpleSample</string>
+  <string name="dismissed">DISMISSED</string>
+  <string name="cancelled">CANCELLED</string>
+  <string name="hello_world">Hello World!</string>
+  <string name="show_list">show list</string>
 </resources>

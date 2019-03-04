@@ -1,1 +1,1 @@
-include ':app', ':lovsimple'
+include ':app', ':library'
