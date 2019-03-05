@@ -16,7 +16,7 @@ class DataMocker {
 
   static {
     for (int i = 0; i < 50; i++) {
-      items.add(new Job(String.valueOf(i), "the job with cod = " + i
+      items.add(new Job(String.valueOf(i), "the job with code = " + i
           , "https://picsum.photos/300/300?image=" + i));
     }
   }

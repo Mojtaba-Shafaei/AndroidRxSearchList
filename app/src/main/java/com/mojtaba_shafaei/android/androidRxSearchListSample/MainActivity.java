@@ -3,11 +3,9 @@ package com.mojtaba_shafaei.android.androidRxSearchListSample;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.Switch;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.view.ViewCompat;
 import com.jakewharton.rxbinding2.view.RxView;
 import com.mojtaba_shafaei.android.rxSearchList.RxSearchList;
 import com.mojtaba_shafaei.android.rxSearchList.RxSearchList.Item;
@@ -23,7 +21,10 @@ public class MainActivity extends AppCompatActivity {
   private TextView tvDismissed;
 
   private final CompositeDisposable mDisposables = new CompositeDisposable();
+  private View btnShowList;
+  private Switch swShowLogo;
 
+  private RxSearchList rxSearchList;
   ////////////////////////////      /////////////////////////////////////
 
   @Override
@@ -31,24 +32,24 @@ public class MainActivity extends AppCompatActivity {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
     View rootView = findViewById(R.id.root);
-    Button btnShowList = findViewById(R.id.button);
-    Switch swShowLogo = findViewById(R.id.sw_showLogo);
+    btnShowList = findViewById(R.id.button);
+    swShowLogo = findViewById(R.id.sw_showLogo);
 
     tvResult = findViewById(R.id.tvResult);
     tvCancelled = findViewById(R.id.tvCancelled);
     tvDismissed = findViewById(R.id.tvDismissed);
 
-    ViewCompat.setLayoutDirection(rootView, ViewCompat.LAYOUT_DIRECTION_RTL);
-    RxSearchList rxSearchList = RxSearchList.create("Search", "job"
-        , false
-        , null);
+    rxSearchList = RxSearchList.create("Search Hint is here", "job", false, null);
+  }
+
+  @Override
+  protected void onStart() {
+    super.onStart();
 
     mDisposables.add(
         RxView.clicks(btnShowList)
             .map(t -> clearAllText())
-            .map(t -> rxSearchList.setShowLogo(swShowLogo.isChecked())
-                .show(getSupportFragmentManager())
-            )
+            .map(t -> rxSearchList.setShowLogo(swShowLogo.isChecked()).show(getSupportFragmentManager()))
             .switchMap(RxSearchList::getQueryIntent)
             .switchMap(DataMocker::getList)
             .observeOn(AndroidSchedulers.mainThread())
@@ -75,7 +76,6 @@ public class MainActivity extends AppCompatActivity {
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(t -> tvDismissed.setText(getString(R.string.dismissed)))
     );
-
   }
 
   /**
@@ -92,7 +92,7 @@ public class MainActivity extends AppCompatActivity {
     if (item != null) {
       Log.d(TAG, "displayItem : " + item.getDes());
 
-      tvResult.setText(String.format("%s%s", item.getCode(), item.getDes()));
+      tvResult.setText(String.format("code = %s , Des = %s", item.getCode(), item.getDes()));
     } else {
       Log.d(TAG, "displayItem : JUST returned");
     }

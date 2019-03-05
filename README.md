@@ -17,6 +17,7 @@ Base class name "RxSearchList"
 - `public Observable<Item> results()`
 - `public Observable<Boolean> onCancel()`
 - `public Observable<Boolean> onDismiss()`
+- `public void setState(Lce itemsObservable)`
 
 ## Download
 [![](https://jitpack.io/v/mojtaba-shafaei/androidbadgebutton.svg)](https://jitpack.io/#mojtaba-shafaei/androidbadgebutton)
