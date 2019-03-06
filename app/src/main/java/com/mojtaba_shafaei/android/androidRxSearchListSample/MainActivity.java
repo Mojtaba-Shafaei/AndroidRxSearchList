@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.jakewharton.rxbinding2.view.RxView;
 import com.mojtaba_shafaei.android.rxSearchList.RxSearchList;
 import com.mojtaba_shafaei.android.rxSearchList.RxSearchList.Item;
+import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
@@ -39,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
     tvCancelled = findViewById(R.id.tvCancelled);
     tvDismissed = findViewById(R.id.tvDismissed);
 
-    rxSearchList = RxSearchList.create("Search Hint is here", "job", false, null);
+    rxSearchList = RxSearchList.create("Search Hint is here", false, null);
   }
 
   @Override
@@ -49,8 +50,22 @@ public class MainActivity extends AppCompatActivity {
     mDisposables.add(
         RxView.clicks(btnShowList)
             .map(t -> clearAllText())
-            .map(t -> rxSearchList.setShowLogo(swShowLogo.isChecked()).show(getSupportFragmentManager()))
-            .switchMap(RxSearchList::getQueryIntent)
+            .map(t -> rxSearchList.setShowLogo(swShowLogo.isChecked()))
+            .map(t -> rxSearchList.showWithQuery(getSupportFragmentManager(), "job with code = 20"))
+            .switchMap(t -> Observable.just("").skip(1))
+            .mergeWith(rxSearchList.getQueryIntent())
+            .switchMap(DataMocker::getList)
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(rxSearchList::setState)
+    );
+
+    mDisposables.add(
+        RxView.clicks(btnShowList)
+            .map(t -> clearAllText())
+            .map(t -> rxSearchList.setShowLogo(swShowLogo.isChecked()))
+            .map(t -> rxSearchList.showWithQuery(getSupportFragmentManager(), "job with code = 20"))
+            .switchMap(t -> Observable.just("").filter(ss -> true))
+            .mergeWith(rxSearchList.getQueryIntent())
             .switchMap(DataMocker::getList)
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(rxSearchList::setState)
