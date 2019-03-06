@@ -9,7 +9,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Typeface;
 import android.os.Bundle;
-import android.text.Editable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -38,21 +37,18 @@ import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
-import io.reactivex.subjects.BehaviorSubject;
 import io.reactivex.subjects.PublishSubject;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Android Rx-List is library for Android developers to just easily pass data as an <code>{@link
- * Observable}</code> to this library and show it as a searchable list.
+ * Android Rx-List is library for Android developers to just easily pass data as an <code>{@link Observable}</code> to this library and show it as a searchable list.
  *
  * <p>There is no need to implement adapter.</p>
  *
  * @author mojtaba-shafaei
  * @implSpec implement {@link Item} interface in data class which pass to library.
- * @implNote This library is based on RxJava, so it's required having knowledge of it. See <a
- * href>http://reactivex.io/RxJava/javadoc</a>
+ * @implNote This library is based on RxJava, so it's required having knowledge of it. See <a href>http://reactivex.io/RxJava/javadoc</a>
  */
 public class RxSearchList extends AppCompatDialogFragment {
 
@@ -95,7 +91,7 @@ public class RxSearchList extends AppCompatDialogFragment {
 
   //<editor-fold desc="PARAMETERS">
   private CharSequence mSearchViewHint;
-  private CharSequence mDefaultSearchText;
+  private CharSequence mDefaultQuery;
   private boolean mShowLogo;
   private Typeface mDefaultTypeFace;
   //</editor-fold>
@@ -103,7 +99,7 @@ public class RxSearchList extends AppCompatDialogFragment {
   private ListAdapter adapter;
   private final CompositeDisposable mDisposable = new CompositeDisposable();
 
-  private final BehaviorSubject<Lce> mItemsSubject = BehaviorSubject.create();
+  private final PublishSubject<Lce> mItemsSubject = PublishSubject.create();
   private final PublishSubject<String> mQuerySubject = PublishSubject.create();
   private final PublishSubject<Item> mResultSubject = PublishSubject.create();
   private final PublishSubject<Boolean> mCancelSubject = PublishSubject.create();
@@ -129,21 +125,15 @@ public class RxSearchList extends AppCompatDialogFragment {
    * Create an instance of {@link RxSearchList}.
    *
    * @param searchViewHint {@link CharSequence}, the SearchView's hint.
-   * @param searchText {@link CharSequence}, the default query text.
    * @param showLogo {@link Boolean}, It determines visibility of list item's logo.
    * @param defaultTypeFace {@link Typeface}, the typeface for of all {@code TextView}
    * @return An instance of {@link RxSearchList} component.
-   * @implNote <p><ui><li>No default query emmit when searchText be <code>{@code
-   * null}</code>.</li></ui></p>
+   * @implNote <p><ui><li>No default query emmit when searchText be <code>{@code null}</code>.</li></ui></p>
    */
-  public static RxSearchList create(@Nullable CharSequence searchViewHint
-      , @Nullable CharSequence searchText
-      , boolean showLogo
-      , @Nullable Typeface defaultTypeFace) {
+  public static RxSearchList create(@Nullable CharSequence searchViewHint, boolean showLogo, @Nullable Typeface defaultTypeFace) {
 
     RxSearchList rxSearchList = new RxSearchList();
     rxSearchList.mSearchViewHint = searchViewHint;
-    rxSearchList.mDefaultSearchText = searchText;
     rxSearchList.mShowLogo = showLogo;
     rxSearchList.mDefaultTypeFace = defaultTypeFace;
 
@@ -159,25 +149,17 @@ public class RxSearchList extends AppCompatDialogFragment {
     return this;
   }
 
-  /**
-   * synonym of {@link #show(FragmentManager, String)}
-   *
-   * It just set {@code 'tag'} as default.Its better to use this method over the {@link
-   * #show(FragmentManager, String)}
-   */
   public RxSearchList show(FragmentManager manager) {
+    return showWithQuery(manager, null);
+  }
+
+  public RxSearchList showWithQuery(FragmentManager manager, String defaultQuery) {
     show(manager, TAG);
+    mDefaultQuery = defaultQuery;
     return this;
   }
 
-  /**
-   * please use {@link #show(FragmentManager)}
-   *
-   * @see #show(FragmentManager)
-   * @deprecated
-   */
   @Override
-  @Deprecated
   public void show(FragmentManager manager, String tag) {
     if (isAdded()) {
       return;
@@ -204,6 +186,9 @@ public class RxSearchList extends AppCompatDialogFragment {
 
     View rootView = inflater.inflate(R.layout.rx_search_list_activity, parent, false);
     initUi(rootView);
+
+    initListView(getContext());
+    initAdapter(getContext());
 
     return rootView;
   }
@@ -234,8 +219,8 @@ public class RxSearchList extends AppCompatDialogFragment {
   }
 
   private void returnResult(Item item) {
+    hideSoftKeyboard(searchView);
     mResultSubject.onNext(item);
-
     dismissAllowingStateLoss();
   }
 
@@ -261,6 +246,10 @@ public class RxSearchList extends AppCompatDialogFragment {
   @Override
   public void onStart() {
     super.onStart();
+
+    bindClicks();
+    bindRx();
+
     tvMessage.setVisibility(View.GONE);
 
     mDisposable.add(
@@ -276,15 +265,12 @@ public class RxSearchList extends AppCompatDialogFragment {
             return Observable.just(ViewState.Message(lce.getMessage()));
 
           } else if (lce.getData() == null || lce.getData().size() == 0) {
-            return Observable
-                .just(ViewState.Message(getString(R.string.rx_search_list_list_is_empty)));
+            return Observable.just(ViewState.Message(getString(R.string.rx_search_list_list_is_empty)));
           }
 
           // because of we need later in adapter to highlight query strings,
           // so cast the query to lowercase to prevent redundant actions in library.
-          return Observable
-              .just(ViewState
-                  .Data(new ViewModel(lce.getQuery().toLowerCase().split(SPACE), lce.getData())));
+          return Observable.just(ViewState.Data(new ViewModel(lce.getQuery().toLowerCase().split(SPACE), lce.getData())));
 
         })
             .observeOn(AndroidSchedulers.mainThread())
@@ -317,13 +303,13 @@ public class RxSearchList extends AppCompatDialogFragment {
     );
 
     // emmit default search-text after binding observable
-    if (mDefaultSearchText != null) {
-      searchView.setText(mDefaultSearchText);
+    if (mDefaultQuery != null) {
+      searchView.setText(mDefaultQuery);
     }
   }
 
-  private CharSequence defaultString(CharSequence query) {
-    return query == null ? "" : query;
+  private String defaultString(CharSequence query) {
+    return query == null ? "" : query.toString();
   }
 
   private String setButtonClearTextVisibilityAndReturnQuery(@NonNull String query) {
@@ -349,11 +335,9 @@ public class RxSearchList extends AppCompatDialogFragment {
     btnBack = root.findViewById(R.id.rx_search_list_btn_back);
 
     // set buttons icon
-    btnBack.setImageDrawable(ContextCompat
-        .getDrawable(getContext(), R.drawable.rx_search_list_ic_arrow_back_grey_600_24dp));
+    btnBack.setImageDrawable(ContextCompat.getDrawable(root.getContext(), R.drawable.rx_search_list_ic_arrow_back_grey_600_24dp));
     btnBack.setTranslationX(isRTL ? D48 : -D48);
-    btnClearText.setImageDrawable(
-        ContextCompat.getDrawable(getContext(), R.drawable.rx_search_list_ic_close_grey_600_24dp));
+    btnClearText.setImageDrawable(ContextCompat.getDrawable(root.getContext(), R.drawable.rx_search_list_ic_close_grey_600_24dp));
 
     // apply typeface
     if (mDefaultTypeFace != null) {
@@ -366,43 +350,31 @@ public class RxSearchList extends AppCompatDialogFragment {
     searchView.setImeOptions(EditorInfo.IME_ACTION_SEARCH | EditorInfo.IME_FLAG_NO_EXTRACT_UI);
 
     // apply in-animation to close/back button
-    btnBack.getViewTreeObserver()
-        .addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-          @Override
-          public void onGlobalLayout() {
-            if (btnBack.getViewTreeObserver().isAlive()) {
-              btnBack.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-              ObjectAnimator animator = ObjectAnimator.ofFloat(btnBack, "translationX", 0);
-              animator.setInterpolator(new DecelerateInterpolator(1.5F));
-              animator.setStartDelay(500);
-              animator.setDuration(300);
-              animator.start();
-            }
-          }
-        });
+    btnBack.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+      @Override
+      public void onGlobalLayout() {
+        if (btnBack.getViewTreeObserver().isAlive()) {
+          btnBack.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+          ObjectAnimator animator = ObjectAnimator.ofFloat(btnBack, "translationX", 0);
+          animator.setInterpolator(new DecelerateInterpolator(1.5F));
+          animator.setStartDelay(500);
+          animator.setDuration(300);
+          animator.start();
+        }
+      }
+    });
 
-    initListView(root.getContext());
-    initAdapter(root.getContext());
-
-    bindClicks();
-    bindRx();
   }
 
   private void bindRx() {
     mDisposable.add(
         RxTextView.afterTextChangeEvents(searchView)
             .observeOn(AndroidSchedulers.mainThread())
-            .map(event -> {
-              final Editable editable = event.editable();
-              if (editable == null) {
-                return "";
-              }
-              return editable.toString();
-            })
+            .map(event -> defaultString(event.editable()))
             .map(this::setButtonClearTextVisibilityAndReturnQuery)
             .observeOn(Schedulers.computation())
-            .throttleWithTimeout(600, TimeUnit.MILLISECONDS, Schedulers.computation())
-            .map(query -> query.replaceAll("\\s(\\s)+", SPACE))//replace all double spaces with one.
+            .throttleWithTimeout(700, TimeUnit.MILLISECONDS, Schedulers.computation())
+            .map(query -> query.replaceAll("\\s(\\s)+", SPACE))//replace all multiple spaces with just one.
             .map(String::trim)
             .distinctUntilChanged()
             .onErrorReturnItem("")
@@ -460,20 +432,17 @@ public class RxSearchList extends AppCompatDialogFragment {
 
   @Override
   public void onPause() {
-    hideSoftKeyboard(searchView);
+    // dispose and clear All subscriptions to prevent leak memory.
+    mDisposable.clear();
 
+    // clear default query to prevent re-query of list after pause and start again.
+    mDefaultQuery = null;
     super.onPause();
-    dismissAllowingStateLoss();
   }
 
   @Override
   public void onDestroyView() {
-    try {
-      mDisposable.clear();
-      recyclerView.setAdapter(null);
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
+    recyclerView.setAdapter(null);
     super.onDestroyView();
   }
 

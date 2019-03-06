@@ -70,7 +70,7 @@
     android:layout_marginTop="16dp"
     android:gravity="center"
     android:minWidth="100dp"
-    android:text="Dismissed Status"  />
+    android:text="Dismissed Status"/>
   <TextView
     android:id="@+id/tvDismissed"
     android:layout_width="match_parent"
