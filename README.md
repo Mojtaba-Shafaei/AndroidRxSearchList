@@ -5,9 +5,8 @@
 - The changed texts(queries) emmit through an Observable<String>.
 
 
-![sample AndroidToolbarBadgeButton image](https://github.com/Mojtaba-Shafaei/AndroidRxSearchList/blob/master/screenShots/Screenshot_01.png)  
-
-![sample AndroidToolbarBadgeButton image](https://github.com/Mojtaba-Shafaei/AndroidRxSearchList/blob/master/screenShots/gif1.gif)  
+![sample AndroidToolbarBadgeButton image](https://github.com/Mojtaba-Shafaei/AndroidRxSearchList/blob/master/screenShots/Screenshot_01.png) ![sample AndroidToolbarBadgeButton image](https://github.com/Mojtaba-Shafaei/AndroidRxSearchList/blob/master/screenShots/gif1.gif)  
+  
 
 
 ## Methods
