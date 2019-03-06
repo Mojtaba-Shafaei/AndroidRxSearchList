@@ -7,6 +7,8 @@
 
 ![sample AndroidToolbarBadgeButton image](https://github.com/Mojtaba-Shafaei/AndroidRxSearchList/blob/master/screenShots/Screenshot_01.png)  
 
+![sample AndroidToolbarBadgeButton image](https://github.com/Mojtaba-Shafaei/AndroidRxSearchList/blob/master/screenShots/gif1.gif)  
+
 
 ## Methods
 Base class name "RxSearchList"
