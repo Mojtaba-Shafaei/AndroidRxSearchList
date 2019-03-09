@@ -43,6 +43,17 @@ RxView.clicks(btnShowList)
 
 
 ## Download
+```
+allprojects {
+		repositories {
+			...
+			maven { url 'https://jitpack.io' }
+		}
+	}
+  ```
+[![](https://jitpack.io/v/Mojtaba-Shafaei/AndroidRxSearchList.svg)](https://jitpack.io/#Mojtaba-Shafaei/AndroidRxSearchList)
+
+
 [![Android Arsenal]( https://img.shields.io/badge/Android%20Arsenal-AndroidRxSearchList-green.svg?style=flat )]( https://android-arsenal.com/details/1/7558 )
 
 
