@@ -42,7 +42,7 @@ RxView.clicks(btnShowList)
 *Be careful to dispose above Disposable in <code>onPause()</code> method.*
 
 
-## Download
+## Install
 ```
 allprojects {
    repositories {
