@@ -45,12 +45,17 @@ RxView.clicks(btnShowList)
 ## Download
 ```
 allprojects {
-		repositories {
-			...
-			maven { url 'https://jitpack.io' }
-		}
-	}
-  ```
+   repositories {
+	...
+	maven { url 'https://jitpack.io' }
+   }
+}
+```
+```
+dependencies {
+  implementation 'com.github.Mojtaba-Shafaei:AndroidRxSearchList:1.0.1'
+}
+```
 [![](https://jitpack.io/v/Mojtaba-Shafaei/AndroidRxSearchList.svg)](https://jitpack.io/#Mojtaba-Shafaei/AndroidRxSearchList)
 
 
