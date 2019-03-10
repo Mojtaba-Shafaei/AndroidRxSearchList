@@ -6,12 +6,10 @@ import io.reactivex.Observable;
 import io.reactivex.schedulers.Schedulers;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 class DataMocker {
 
-  private final String TAG = "DataMocker";
-
+  final static String ENTER_QUERY_MESSAGE = "Please Query";
   static List<Job> items = new ArrayList<>();
 
   static {
@@ -26,6 +24,10 @@ class DataMocker {
   }
 
   static io.reactivex.Observable<Lce> getList(String query) {
+    if (query == null || query.isEmpty()) {
+      return Observable.just(Lce.message(ENTER_QUERY_MESSAGE));
+    }
+
     return Observable.fromIterable(items)
         .subscribeOn(Schedulers.io())
         .filter(item -> item.getDes().contains(query))
@@ -47,15 +49,5 @@ class DataMocker {
         })
         .startWith(Lce.loading())
         ;
-  }
-
-  static io.reactivex.Observable<Lce> getList() {
-    return Observable.fromIterable(items)
-        .toList()
-        .toObservable()
-        .map(t -> Lce.data("", t))
-        .delay(3, TimeUnit.SECONDS, Schedulers.computation())//make delay similar as online APIs.
-        .startWith(Lce.loading());
-
   }
 }
