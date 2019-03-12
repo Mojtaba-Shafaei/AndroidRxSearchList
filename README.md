@@ -42,8 +42,24 @@ RxView.clicks(btnShowList)
 *Be careful to dispose above Disposable in <code>onPause()</code> method.*
 
 
-## Download
+## Install
+```
+allprojects {
+   repositories {
+	...
+	maven { url 'https://jitpack.io' }
+   }
+}
+```
+```
+dependencies {
+  implementation 'com.github.Mojtaba-Shafaei:AndroidRxSearchList:1.0.1'
+}
+```
 [![](https://jitpack.io/v/Mojtaba-Shafaei/AndroidRxSearchList.svg)](https://jitpack.io/#Mojtaba-Shafaei/AndroidRxSearchList)
+
+
+[![Android Arsenal]( https://img.shields.io/badge/Android%20Arsenal-AndroidRxSearchList-green.svg?style=flat )]( https://android-arsenal.com/details/1/7558 )
 
 
 
