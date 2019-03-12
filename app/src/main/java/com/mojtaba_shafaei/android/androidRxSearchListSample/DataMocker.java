@@ -10,6 +10,7 @@ import java.util.List;
 class DataMocker {
 
   final static String ENTER_QUERY_MESSAGE = "Please Query";
+  public static final CharSequence ERROR_HAPPENED = "ERROR HAPPENED!!!";
   static List<Job> items = new ArrayList<>();
 
   static {
@@ -17,10 +18,6 @@ class DataMocker {
       items.add(new Job(String.valueOf(i), "the job with code = " + i
           , "https://picsum.photos/300/300?image=" + i));
     }
-  }
-
-  static io.reactivex.Observable<Lce> getError() {
-    return io.reactivex.Observable.just(Lce.error("Error Happened"));
   }
 
   static io.reactivex.Observable<Lce> getList(String query) {
@@ -34,16 +31,15 @@ class DataMocker {
         .toList()
         .toObservable()
         .map(data -> {
-          if (query.length() > 0) { // add a new dummy record of inserted query by User.
-            data.add(0, new Job(null, query, null));
-          }
+          // add a new dummy record of inserted query by User.
+          data.add(0, new Job(null, query, null));
           return data;
         })
         .map(data -> Lce.data(query, data))
         .map(t -> {
           SystemClock.sleep(500);
           if (query.contentEquals("error")) {// to test rapidly error UI, write "error" as query
-            return (Lce.error("ERROR HAPPENED!!!"));
+            return (Lce.error(ERROR_HAPPENED));
           }
           return (t);
         })
